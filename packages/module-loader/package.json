@@ -40,7 +40,8 @@
   },
   "dependencies": {
     "lodash": "^4.17.11",
-    "pkg-dir": "^3.0.0"
+    "pkg-dir": "^3.0.0",
+    "trailduck": "^0.2.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.0",
