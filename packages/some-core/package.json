@@ -39,7 +39,7 @@
     "test": "npm run lint"
   },
   "dependencies": {
-    "@ecosystem/conf": "^0.0.1",
+    "@ecosystem/config": "^0.0.1",
     "@ecosystem/module-loader": "^0.0.1"
   },
   "devDependencies": {

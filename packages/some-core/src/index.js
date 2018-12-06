@@ -1,12 +1,15 @@
-import Conf from '@ecosystem/conf';
+import Config from '@ecosystem/config';
 import ModuleLoader from '@ecosystem/module-loader';
 import defaultConfig from './defaultConfig';
 
+const { argv } = process;
+
 const plugins = new ModuleLoader('someEcosystemPlugin');
 
-const conf = new Conf({
+const someEcosystem = new Config('someEcosystem', {
   defaultConfig,
-  loaders: [plugins]
+  loaders: [plugins],
+  optionsConfig: argv[2] || {}
 });
 
-export default conf.load();
+export default someEcosystem.config;

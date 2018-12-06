@@ -40,7 +40,8 @@
   },
   "dependencies": {
     "lodash": "^4.17.11",
-    "merge-configuration": "^0.4.0"
+    "merge-configuration": "^0.4.0",
+    "rc-config": "^0.1.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.0",
