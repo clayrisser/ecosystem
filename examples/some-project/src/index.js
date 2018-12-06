@@ -1,5 +1,3 @@
-export default class Hello {
-  constructor(world) {
-    this.world = world;
-  }
-}
+import someCore from '@ecosystem/some-core';
+
+console.log(someCore);

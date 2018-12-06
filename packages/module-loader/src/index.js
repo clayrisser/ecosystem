@@ -1,7 +1,7 @@
-import Module from 'module';
 import _ from 'lodash';
 import path from 'path';
 import pkgDir from 'pkg-dir';
+import Module from './module';
 
 export default class ModuleLoader {
   _modules = null;

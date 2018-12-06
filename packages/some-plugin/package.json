@@ -2,6 +2,7 @@
   "name": "@ecosystem/some-plugin",
   "version": "0.0.1",
   "description": "tooling to create an ecosystem on nodejs",
+  "someEcosystemPlugin": "lib/someEcosystem.js",
   "keywords": [
     "@ecosystem/conf",
     "ecosystem",

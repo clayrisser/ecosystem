@@ -1,6 +1,6 @@
-# @ecosystem/conf
+# @ecosystem/config
 
-[![GitHub stars](https://img.shields.io/github/stars/codejamninja/@ecosystem/conf.svg?style=social&label=Stars)](https://github.com/codejamninja/@ecosystem/conf)
+[![GitHub stars](https://img.shields.io/github/stars/codejamninja/@ecosystem/config.svg?style=social&label=Stars)](https://github.com/codejamninja/@ecosystem/config)
 
 > tooling to create an ecosystem on nodejs
 
@@ -16,7 +16,7 @@ Please ★ this repo if you found it useful ★ ★ ★
 ## Installation
 
 ```sh
-npm install --save @ecosystem/conf
+npm install --save @ecosystem/config
 ```
 
 
@@ -27,34 +27,34 @@ npm install --save @ecosystem/conf
 
 ## Usage
 
-[Contribute](https://github.com/codejamninja/@ecosystem/conf/blob/master/CONTRIBUTING.md) usage docs
+[Contribute](https://github.com/codejamninja/@ecosystem/config/blob/master/CONTRIBUTING.md) usage docs
 
 
 ## Support
 
-Submit an [issue](https://github.com/codejamninja/@ecosystem/conf/issues/new)
+Submit an [issue](https://github.com/codejamninja/@ecosystem/config/issues/new)
 
 
 ## Screenshots
 
-[Contribute](https://github.com/codejamninja/@ecosystem/conf/blob/master/CONTRIBUTING.md) a screenshot
+[Contribute](https://github.com/codejamninja/@ecosystem/config/blob/master/CONTRIBUTING.md) a screenshot
 
 
 ## Contributing
 
-Review the [guidelines for contributing](https://github.com/codejamninja/@ecosystem/conf/blob/master/CONTRIBUTING.md)
+Review the [guidelines for contributing](https://github.com/codejamninja/@ecosystem/config/blob/master/CONTRIBUTING.md)
 
 
 ## License
 
-[MIT License](https://github.com/codejamninja/@ecosystem/conf/blob/master/LICENSE)
+[MIT License](https://github.com/codejamninja/@ecosystem/config/blob/master/LICENSE)
 
 [Jam Risser](https://codejam.ninja) © 2018
 
 
 ## Changelog
 
-Review the [changelog](https://github.com/codejamninja/@ecosystem/conf/blob/master/CHANGELOG.md)
+Review the [changelog](https://github.com/codejamninja/@ecosystem/config/blob/master/CHANGELOG.md)
 
 
 ## Credits

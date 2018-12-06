@@ -42,7 +42,7 @@ export default class Module {
     return this._config;
   }
 
-  get module() {
+  import() {
     if (this._module) return this._module;
     const module = require(this.path);
     this._module = module.__esModule ? module.default : module;

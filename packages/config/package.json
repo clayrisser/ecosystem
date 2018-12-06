@@ -1,16 +1,16 @@
 {
-  "name": "@ecosystem/conf",
+  "name": "@ecosystem/config",
   "version": "0.0.1",
   "description": "tooling to create an ecosystem on nodejs",
   "keywords": [
-    "@ecosystem/conf",
+    "@ecosystem/config",
     "ecosystem",
     "node",
     "config"
   ],
-  "homepage": "https://github.com/codejamninja/@ecosystem/conf",
+  "homepage": "https://github.com/codejamninja/@ecosystem/config",
   "bugs": {
-    "url": "https://github.com/codejamninja/@ecosystem/conf/issues",
+    "url": "https://github.com/codejamninja/@ecosystem/config/issues",
     "email": "jam@codejam.ninja"
   },
   "license": "MIT",
@@ -25,7 +25,7 @@
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/codejamninja/@ecosystem/conf"
+    "url": "https://github.com/codejamninja/@ecosystem/config"
   },
   "scripts": {
     "build": "npm run test && babel src -d lib",
@@ -38,7 +38,10 @@
     "start": "babel-node src",
     "test": "npm run lint"
   },
-  "dependencies": {},
+  "dependencies": {
+    "lodash": "^4.17.11",
+    "merge-configuration": "^0.4.0"
+  },
   "devDependencies": {
     "@babel/cli": "^7.2.0",
     "@babel/core": "^7.2.0",
