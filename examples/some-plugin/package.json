@@ -1,7 +1,9 @@
 {
-  "name": "@ecosystem/some-core",
+  "name": "@ecosystem/some-plugin",
   "version": "0.0.1",
+  "private": true,
   "description": "tooling to create an ecosystem on nodejs",
+  "someEcosystemPlugin": "lib/someEcosystem.js",
   "keywords": [
     "@ecosystem/conf",
     "ecosystem",
@@ -38,10 +40,7 @@
     "start": "babel-node src",
     "test": "npm run lint"
   },
-  "dependencies": {
-    "@ecosystem/config": "^0.0.1",
-    "@ecosystem/module-loader": "^0.0.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@babel/cli": "^7.2.0",
     "@babel/core": "^7.2.0",

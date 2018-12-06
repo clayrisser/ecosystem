@@ -10,7 +10,9 @@ export default class ModuleLoader {
 
   name = '';
 
-  constructor(name) {
+  constructor(name, options = {}) {
+    const { configPath = '' } = options;
+    this.configPath = configPath;
     this.name = name;
   }
 
@@ -35,7 +37,9 @@ export default class ModuleLoader {
     this._modules = _.reduce(
       this.moduleNames,
       (modules, moduleName) => {
-        modules[moduleName] = new Module(moduleName, this.name);
+        modules[moduleName] = new Module(moduleName, this.name, {
+          configPath: this.configPath
+        });
         return modules;
       },
       {}

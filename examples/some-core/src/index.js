@@ -4,7 +4,9 @@ import defaultConfig from './defaultConfig';
 
 const { argv } = process;
 
-const plugins = new ModuleLoader('someEcosystemPlugin');
+const plugins = new ModuleLoader('someEcosystemPlugin', {
+  configPath: 'config'
+});
 
 const someEcosystem = new ConfigLoader('someEcosystem', {
   defaultConfig,
@@ -15,9 +17,5 @@ const someEcosystem = new ConfigLoader('someEcosystem', {
 
 export default someEcosystem.config;
 
-function main() {
-  console.log(socketGetConfig('someEcosystem'));
-  someEcosystem.socket.stop();
-}
-
-main();
+socketGetConfig('someEcosystem');
+someEcosystem.socket.stop();

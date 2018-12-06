@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import path from 'path';
 import pkgDir from 'pkg-dir';
 
@@ -14,9 +15,10 @@ export default class Module {
 
   name = '';
 
-  constructor(name, loaderName) {
-    this.name = name;
+  constructor(name, loaderName, { configPath = '' }) {
+    this.configPath = configPath;
     this.loaderName = loaderName;
+    this.name = name;
   }
 
   get path() {
@@ -37,8 +39,12 @@ export default class Module {
 
   get config() {
     if (this._config) return this._config;
-    const config = require(path.resolve(this.path, this.pkg[this.loaderName]));
-    this._config = config.__esModule ? config.default : config;
+    let config = require(path.resolve(this.path, this.pkg[this.loaderName]));
+    config = config.__esModule ? config.default : config;
+    if (this.configPath.length) {
+      config = _.get(config, this.configPath, {});
+    }
+    this._config = config || {};
     return this._config;
   }
 
