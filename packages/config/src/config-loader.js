@@ -18,6 +18,7 @@ export default class ConfigLoader {
   level = 1;
   loaders = [];
   name = '';
+  passes = 1;
   socket = false;
 
   constructor(
@@ -28,6 +29,7 @@ export default class ConfigLoader {
       level = 1,
       loaders = [],
       optionsConfig = {},
+      passes = 1,
       socket = false
     }
   ) {
@@ -37,6 +39,7 @@ export default class ConfigLoader {
     this.level = level;
     this.loaders = loaders;
     this.name = name;
+    this.passes = passes;
     this.socket = socket;
     this.handleSocket();
   }
@@ -71,7 +74,7 @@ export default class ConfigLoader {
     return this.getConfigSync();
   }
 
-  async getModuleConfig() {
+  async mergeModuleConfig(passes = 0, config = {}) {
     if (this.cache && this._modulesConfig) return this._modulesConfig;
     const modulesConfig = _.reduce(
       this.loaders,
@@ -83,42 +86,48 @@ export default class ConfigLoader {
         });
         return config;
       },
-      {}
+      config
     );
-    if (this.cache) this._modulesConfig = modulesConfig;
+    if (passes >= this.passes && this.cache) {
+      this._modulesConfig = modulesConfig;
+    }
     return modulesConfig;
   }
 
-  async getOptionsConfig() {
+  async mergeOptionsConfig(passes = 0, config = {}) {
     if (this.cache && this._optionsConfig) return this._optionsConfig;
-    const optionsConfig =
+    let optionsConfig =
       typeof this.initialOptionsConfig === 'string'
         ? JSON.parse(this.initialOptionsConfig)
         : this.initialOptionsConfig;
-    if (this.cache) this._optionsConfig = optionsConfig;
+    optionsConfig = mergeConfiguration(config, optionsConfig, {
+      level: this.level
+    });
+    if (passes >= this.passes && this.cache) {
+      this._optionsConfig = optionsConfig;
+    }
     return optionsConfig;
   }
 
-  async getUserConfig() {
+  async mergeUserConfig(passes = 0, config = {}) {
     if (this.cache && this._userConfig) return this._userConfig;
-    const userConfig = rcConfig({ name: this.name });
-    if (this.cache) this._userConfig = userConfig;
+    let userConfig = rcConfig({ name: this.name });
+    userConfig = mergeConfiguration(config, userConfig, { level: this.level });
+    if (passes >= this.passes && this.cache) this._userConfig = userConfig;
     return userConfig;
   }
 
-  async getConfig() {
+  async getConfig(passes = 0, config) {
     if (this.cache && this._config) return this._config;
-    let config = { ...this.defaultConfig };
-    config = mergeConfiguration(config, await this.getModuleConfig(), {
-      level: this.level
-    });
-    config = mergeConfiguration(config, await this.getUserConfig(), {
-      level: this.level
-    });
-    config = mergeConfiguration(config, await this.getOptionsConfig(), {
-      level: this.level
-    });
-    if (this.cache) this._config = config;
+    if (!config) config = { ...this.defaultConfig };
+    config = await this.mergeModuleConfig(passes, config);
+    config = await this.mergeUserConfig(passes, config);
+    config = await this.mergeOptionsConfig(passes, config);
+    if (passes < this.passes) {
+      config = await this.getConfig(++passes, config);
+    } else if (this.cache) {
+      this._config = config;
+    }
     return config;
   }
 }

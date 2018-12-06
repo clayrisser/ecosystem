@@ -1,5 +1,5 @@
+import createConfig from './createConfig';
+
 export default {
-  config: {
-    howdy: 'texas'
-  }
+  config: createConfig
 };

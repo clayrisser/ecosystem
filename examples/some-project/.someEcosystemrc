@@ -1,3 +1,4 @@
 module.exports = {
-  hello: f => f + 's'
+  hello: f => f + '!',
+  howdy: 'texas'
 }
