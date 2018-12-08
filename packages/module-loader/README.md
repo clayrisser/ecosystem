@@ -2,7 +2,7 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/codejamninja/@ecosystem/module-loader.svg?style=social&label=Stars)](https://github.com/codejamninja/@ecosystem/module-loader)
 
-> tooling to create an ecosystem on nodejs
+> load ecosystem modules
 
 Please ★ this repo if you found it useful ★ ★ ★
 
