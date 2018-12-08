@@ -118,14 +118,20 @@ export default class ConfigLoader {
     return userConfig;
   }
 
-  async getConfig(passes = 0, config) {
+  async getConfig(configs = null, passes = 0, config) {
     if (this.cache && this._config) return this._config;
     if (!config) config = { ...this.defaultConfig };
-    config = await this.mergeModuleConfig(passes, config);
-    config = await this.mergeUserConfig(passes, config);
-    config = await this.mergeOptionsConfig(passes, config);
+    if (!configs || (configs?.length && _.includes(configs, 'module'))) {
+      config = await this.mergeModuleConfig(passes, config);
+    }
+    if (!configs || (configs?.length && _.includes(configs, 'user'))) {
+      config = await this.mergeUserConfig(passes, config);
+    }
+    if (!configs || (configs?.length && _.includes(configs, 'options'))) {
+      config = await this.mergeOptionsConfig(passes, config);
+    }
     if (passes < this.passes) {
-      config = await this.getConfig(++passes, config);
+      config = await this.getConfig(configs, ++passes, config);
     } else if (this.cache) {
       this._config = config;
     }
