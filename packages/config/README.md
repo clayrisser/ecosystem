@@ -2,7 +2,7 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/codejamninja/@ecosystem/config.svg?style=social&label=Stars)](https://github.com/codejamninja/@ecosystem/config)
 
-> tooling to create an ecosystem on nodejs
+> load config for ecosystem
 
 Please ★ this repo if you found it useful ★ ★ ★
 
