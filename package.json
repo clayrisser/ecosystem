@@ -1,6 +1,7 @@
 {
-  "name": "sphinxdoc",
-  "version": "0.1.1",
+  "name": "ecosystem",
+  "version": "0.2.4",
+  "private": true,
   "files": [
     "packages"
   ],
