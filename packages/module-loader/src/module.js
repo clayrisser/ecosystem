@@ -11,6 +11,8 @@ export default class Module {
 
   _pkg = null;
 
+  _properties = null;
+
   loaderName = '';
 
   name = '';
@@ -37,14 +39,24 @@ export default class Module {
     return this._pkg;
   }
 
+  get properties() {
+    if (this._properties) return this._properties;
+    let properties = require(path.resolve(
+      this.path,
+      this.pkg[this.loaderName]
+    ));
+    properties = properties.__esModule ? properties.default : properties;
+    this._properties = properties || {};
+    return this._properties;
+  }
+
   get config() {
     if (this._config) return this._config;
-    let config = require(path.resolve(this.path, this.pkg[this.loaderName]));
-    config = config.__esModule ? config.default : config;
+    let config = {};
     if (this.configPath.length) {
-      config = _.get(config, this.configPath, {});
+      config = _.get(this.properties, this.configPath, {});
     }
-    this._config = config || {};
+    this._config = config;
     return this._config;
   }
 

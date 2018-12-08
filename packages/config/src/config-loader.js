@@ -97,7 +97,8 @@ export default class ConfigLoader {
   async mergeOptionsConfig(passes = 0, config = {}) {
     if (this.cache && this._optionsConfig) return this._optionsConfig;
     let optionsConfig =
-      typeof this.initialOptionsConfig === 'string'
+      typeof this.initialOptionsConfig === 'string' &&
+      this.initialOptionsConfig.length
         ? JSON.parse(this.initialOptionsConfig)
         : this.initialOptionsConfig;
     optionsConfig = mergeConfiguration(config, optionsConfig, {
