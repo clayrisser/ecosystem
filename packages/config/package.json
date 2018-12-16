@@ -1,6 +1,6 @@
 {
   "name": "@ecosystem/config",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "tooling to create an ecosystem on nodejs",
   "keywords": [
     "@ecosystem/config",
