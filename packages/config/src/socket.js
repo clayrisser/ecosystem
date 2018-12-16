@@ -3,8 +3,6 @@ import ipc from 'node-ipc';
 import deasync from 'deasync';
 import { configLoaders } from './config-loader';
 
-let started = false;
-
 export default class Socket {
   constructor(socketConfig) {
     ipc.config = {
@@ -28,7 +26,6 @@ export default class Socket {
   }
 
   async startAysnc() {
-    started = true;
     return new Promise(resolve => {
       ipc.serve(() => {
         this.handleServe();
@@ -59,7 +56,6 @@ export default class Socket {
 }
 
 async function socketGetConfigAsync(configLoaderName, socketConfig) {
-  if (!started) throw new Error('socket not started');
   ipc.config = {
     ...ipc.config,
     id: 'client',
