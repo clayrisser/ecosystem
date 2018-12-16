@@ -81,7 +81,8 @@ export default class ConfigLoader {
       (config, loader) => {
         _.each(loader.modules, module => {
           config = mergeConfiguration(config, module.config, {
-            level: this.level
+            level: this.level,
+            mergeModifierFunction: false
           });
         });
         return config;
@@ -102,7 +103,8 @@ export default class ConfigLoader {
         ? JSON.parse(this.initialOptionsConfig)
         : this.initialOptionsConfig;
     optionsConfig = mergeConfiguration(config, optionsConfig, {
-      level: this.level
+      level: this.level,
+      mergeModifierFunction: false
     });
     if (passes >= this.passes && this.cache) {
       this._optionsConfig = optionsConfig;
@@ -113,7 +115,10 @@ export default class ConfigLoader {
   async mergeUserConfig(passes = 0, config = {}) {
     if (this.cache && this._userConfig) return this._userConfig;
     let userConfig = rcConfig({ name: this.name });
-    userConfig = mergeConfiguration(config, userConfig, { level: this.level });
+    userConfig = mergeConfiguration(config, userConfig, {
+      level: this.level,
+      mergeModifierFunction: false
+    });
     if (passes >= this.passes && this.cache) this._userConfig = userConfig;
     return userConfig;
   }
