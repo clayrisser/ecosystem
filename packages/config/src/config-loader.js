@@ -12,7 +12,8 @@ export default class ConfigLoader {
   _modulesConfig = null;
   _optionsConfig = null;
   _userConfig = null;
-  cache = true;
+  _appendedConfig = {};
+  cache = false;
   defaultConfig = {};
   initialOptionsConfig = {};
   level = 1;
@@ -24,7 +25,7 @@ export default class ConfigLoader {
   constructor(
     name,
     {
-      cache = true,
+      cache = false,
       defaultConfig = {},
       level = 1,
       loaders = [],
@@ -42,6 +43,10 @@ export default class ConfigLoader {
     this.passes = passes;
     this.socket = socket;
     this.handleSocket();
+  }
+
+  appendConfig(config) {
+    this._appendedConfig = config;
   }
 
   handleSocket() {
@@ -140,6 +145,6 @@ export default class ConfigLoader {
     } else if (this.cache) {
       this._config = config;
     }
-    return config;
+    return { ...config, ...this._appendedConfig };
   }
 }
