@@ -1,7 +1,7 @@
 {
   "name": "some-project",
   "private": true,
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "tooling to create an ecosystem on nodejs",
   "keywords": [
     "@ecosystem/conf",
@@ -40,7 +40,7 @@
     "test": "npm run lint"
   },
   "dependencies": {
-    "@ecosystem/some-core": "^0.2.8",
+    "@ecosystem/some-core": "^0.2.9",
     "@ecosystem/some-plugin": "^0.2.0"
   },
   "devDependencies": {
