@@ -39,7 +39,7 @@ export default class ModuleLoader {
       modules,
       (graph, module, moduleName) => {
         const children = this.dependsOnPath?.length
-          ? module.config[this.dependsOnPath] || []
+          ? module.properties[this.dependsOnPath] || []
           : [];
         graph[moduleName] = { children };
         _.each(children, child => {
