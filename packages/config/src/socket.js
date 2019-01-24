@@ -1,6 +1,6 @@
 import CircularJSON from 'circular-json';
-import ipc from 'node-ipc';
 import deasync from 'deasync';
+import ipc from 'node-ipc';
 import { configLoaders } from './config-loader';
 
 export default class Socket {
@@ -21,33 +21,15 @@ export default class Socket {
     });
   }
 
-  handleServe() {
-    ipc.server.on('config.req', this.handleConfigRequest);
-  }
-
-  async startAysnc() {
-    return new Promise(resolve => {
-      ipc.serve(() => {
-        this.handleServe();
-        resolve();
-      });
-      ipc.server.start();
-    });
-  }
-
   start() {
-    let error = null;
-    const startSync = deasync(async (...args) => {
-      const done = args.pop();
-      const config = await this.startAysnc(...args).catch(err => {
-        error = err;
-        done();
-      });
-      return done(null, config);
+    let done = false;
+    ipc.serve(() => {
+      ipc.server.on('config.req', this.handleConfigRequest);
+      done = true;
     });
-    const result = startSync();
-    if (error) throw error;
-    return result;
+    ipc.server.start();
+    while (!done) deasync.sleep(100);
+    return null;
   }
 
   stop() {
@@ -55,7 +37,10 @@ export default class Socket {
   }
 }
 
-async function socketGetConfigAsync(configLoaderName, socketConfig) {
+export function socketGetConfig(configLoaderName, socketConfig) {
+  let done = false;
+  let error = null;
+  let result = null;
   ipc.config = {
     ...ipc.config,
     id: 'client',
@@ -63,31 +48,19 @@ async function socketGetConfigAsync(configLoaderName, socketConfig) {
     silent: true,
     ...socketConfig
   };
-  return new Promise(resolve => {
-    try {
-      return ipc.connectTo('server', () => {
-        ipc.of.server.on('config.res', res => {
-          return resolve(res.config);
-        });
-        ipc.of.server.emit('config.req', { configLoaderName });
+  try {
+    ipc.connectTo('server', () => {
+      ipc.of.server.on('config.res', res => {
+        result = res.config;
+        done = true;
       });
-    } catch (err) {
-      return resolve(null);
-    }
-  });
-}
-
-export function socketGetConfig(...args) {
-  let error = null;
-  const socketGetConfigSync = deasync(async (...args) => {
-    const done = args.pop();
-    const config = await socketGetConfigAsync(...args).catch(err => {
-      error = err;
-      done();
+      ipc.of.server.emit('config.req', { configLoaderName });
     });
-    return done(null, config);
-  });
-  const result = socketGetConfigSync(...args);
+  } catch (err) {
+    error = err;
+    done = true;
+  }
+  while (!done) deasync.sleep(100);
   if (error) throw error;
   return result;
 }

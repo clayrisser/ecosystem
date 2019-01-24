@@ -61,16 +61,16 @@ export default class ConfigLoader {
   }
 
   getConfigSync(...args) {
+    let done = false;
+    let result = null;
     let error = null;
-    const getConfigSync = deasync(async (...args) => {
-      const done = args.pop();
-      const config = await this.getConfig(...args).catch(err => {
-        error = err;
-        done();
-      });
-      return done(null, config);
-    });
-    const result = getConfigSync(...args);
+    this.getConfig(...args)
+      .then(promiseResult => {
+        result = promiseResult;
+        done = true;
+      })
+      .catch(err => (error = err));
+    if (!done) deasync.sleep(100);
     if (error) throw error;
     return result;
   }
