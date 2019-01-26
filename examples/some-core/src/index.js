@@ -1,4 +1,4 @@
-import ConfigLoader, { socketGetConfig } from '@ecosystem/config';
+import ConfigLoader from '@ecosystem/config';
 import ModuleLoader from '@ecosystem/module-loader';
 import defaultConfig from './defaultConfig';
 
@@ -15,7 +15,8 @@ const someEcosystem = new ConfigLoader('someEcosystem', {
   socket: true
 });
 
-export default someEcosystem.config;
+export function stop() {
+  return someEcosystem.stop();
+}
 
-socketGetConfig('someEcosystem');
-someEcosystem.socket.stop();
+export default someEcosystem.config;

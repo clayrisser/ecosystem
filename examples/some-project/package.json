@@ -36,7 +36,9 @@
     "lint": "npm run format && eslint ./",
     "lint:fix": "npm run format && eslint --fix ./",
     "prepublish": "npm run build",
-    "start": "babel-node src",
+    "start": "sh start.sh",
+    "start:client": "babel-node src/client",
+    "start:server": "babel-node src/server",
     "test": "npm run lint"
   },
   "dependencies": {

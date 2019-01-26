@@ -1,26 +1,12 @@
+import MultithreadConfig from 'multithread-config';
 import _ from 'lodash';
-import deasync from 'deasync';
 import mergeConfiguration from 'merge-configuration';
+import path from 'path';
+import pkgDir from 'pkg-dir';
 import rcConfig from 'rc-config';
-import Socket from './socket';
-
-let socket = null;
-export const configLoaders = {};
 
 export default class ConfigLoader {
-  _config = null;
-  _modulesConfig = null;
-  _optionsConfig = null;
-  _userConfig = null;
   _appendedConfig = {};
-  cache = false;
-  defaultConfig = {};
-  initialOptionsConfig = {};
-  level = 1;
-  loaders = [];
-  name = '';
-  passes = 1;
-  socket = false;
 
   constructor(
     name,
@@ -39,47 +25,24 @@ export default class ConfigLoader {
     this.initialOptionsConfig = optionsConfig;
     this.level = level;
     this.loaders = loaders;
-    this.name = name;
+    this.name =
+      name ||
+      require(path.resolve(pkgDir.sync(process.cwd()), 'package.json')).name ||
+      'some-config-loader';
     this.passes = passes;
-    this.socket = socket;
-    this.handleSocket();
-  }
-
-  appendConfig(config) {
-    this._appendedConfig = config;
-  }
-
-  handleSocket() {
-    if (this.socket) {
-      configLoaders[this.name] = this;
-      if (!socket) {
-        socket = new Socket(_.isPlainObject(this.socket) ? this.socket : {});
-        socket.start();
-      }
-      this.socket = socket;
-    }
-  }
-
-  getConfigSync(...args) {
-    let done = false;
-    let result = null;
-    let error = null;
-    this.getConfig(...args)
-      .then(promiseResult => {
-        result = promiseResult;
-        done = true;
-      })
-      .catch(err => (error = err));
-    if (!done) deasync.sleep(100);
-    if (error) throw error;
-    return result;
+    this.mc = new MultithreadConfig({ name: this.name, socket });
   }
 
   get config() {
-    return this.getConfigSync();
+    return this.getConfig();
   }
 
-  async mergeModuleConfig(passes = 0, config = {}) {
+  set config(config = {}) {
+    this._appendedConfig = config;
+    return this.config;
+  }
+
+  mergeModuleConfig(passes = 0, config = {}) {
     if (this.cache && this._modulesConfig) return this._modulesConfig;
     const modulesConfig = _.reduce(
       this.loaders,
@@ -100,7 +63,7 @@ export default class ConfigLoader {
     return modulesConfig;
   }
 
-  async mergeOptionsConfig(passes = 0, config = {}) {
+  mergeOptionsConfig(passes = 0, config = {}) {
     if (this.cache && this._optionsConfig) return this._optionsConfig;
     let optionsConfig =
       typeof this.initialOptionsConfig === 'string' &&
@@ -117,7 +80,7 @@ export default class ConfigLoader {
     return optionsConfig;
   }
 
-  async mergeUserConfig(passes = 0, config = {}) {
+  mergeUserConfig(passes = 0, config = {}) {
     if (this.cache && this._userConfig) return this._userConfig;
     let userConfig = rcConfig({ name: this.name });
     userConfig = mergeConfiguration(config, userConfig, {
@@ -128,23 +91,42 @@ export default class ConfigLoader {
     return userConfig;
   }
 
-  async getConfig(configs = null, passes = 0, config) {
+  getConfig(dynamicConfig, configs = null, passes = 0, config) {
     if (this.cache && this._config) return this._config;
-    if (!config) config = { ...this.defaultConfig };
-    if (!configs || (configs?.length && _.includes(configs, 'module'))) {
-      config = await this.mergeModuleConfig(passes, config);
+    if (this.mc.owner) {
+      if (!config) config = { ...this.defaultConfig };
+      if (!configs || (configs?.length && _.includes(configs, 'module'))) {
+        config = this.mergeModuleConfig(passes, config);
+      }
+      if (!configs || (configs?.length && _.includes(configs, 'user'))) {
+        config = this.mergeUserConfig(passes, config);
+      }
+      if (!configs || (configs?.length && _.includes(configs, 'options'))) {
+        config = this.mergeOptionsConfig(passes, config);
+      }
     }
-    if (!configs || (configs?.length && _.includes(configs, 'user'))) {
-      config = await this.mergeUserConfig(passes, config);
-    }
-    if (!configs || (configs?.length && _.includes(configs, 'options'))) {
-      config = await this.mergeOptionsConfig(passes, config);
+    if (dynamicConfig) {
+      config = mergeConfiguration(config, dynamicConfig, {
+        level: this.level,
+        mergeModifierFunction: false
+      });
     }
     if (passes < this.passes) {
-      config = await this.getConfig(configs, ++passes, config);
-    } else if (this.cache) {
-      this._config = config;
+      config = this.getConfig(config, configs, ++passes);
     }
-    return { ...config, ...this._appendedConfig };
+    if (this.mc.owner) {
+      config = { ...config, ...this._appendedConfig };
+      this.mc.config = config;
+    }
+    this._config = this.mc.config;
+    return this._config;
+  }
+
+  clearCache() {
+    return (this._config = null);
+  }
+
+  stop() {
+    return this.mc.stop();
   }
 }

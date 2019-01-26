@@ -12,7 +12,6 @@
     "lerna": "lerna",
     "link": "lerna link",
     "ls": "lerna ls",
-    "prepublish": "npm run bootstrap",
     "publish": "lerna publish"
   },
   "devDependencies": {
