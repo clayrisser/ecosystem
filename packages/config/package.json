@@ -46,7 +46,7 @@
     "fs-extra": "^7.0.1",
     "lodash": "^4.17.11",
     "merge-configuration": "^0.4.1",
-    "multithread-config": "^0.2.2",
+    "multithread-config": "^0.2.3",
     "node-ipc": "^9.1.1",
     "pkg-dir": "^3.0.0",
     "rc-config": "^0.1.0",
