@@ -30,7 +30,15 @@ export default class ConfigLoader {
       require(path.resolve(pkgDir.sync(process.cwd()), 'package.json')).name ||
       'some-config-loader';
     this.passes = passes;
-    this.mc = new MultithreadConfig({ name: this.name, socket });
+    this.mc = new MultithreadConfig({
+      name: this.name,
+      socket: socket
+        ? {
+            id: name,
+            ...(socket === true ? {} : socket)
+          }
+        : false
+    });
   }
 
   get config() {
