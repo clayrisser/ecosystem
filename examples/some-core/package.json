@@ -1,6 +1,6 @@
 {
   "name": "@ecosystem/some-core",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "private": true,
   "description": "tooling to create an ecosystem on nodejs",
   "keywords": [
@@ -40,8 +40,8 @@
     "test": "npm run lint"
   },
   "dependencies": {
-    "@ecosystem/config": "^0.3.4",
-    "@ecosystem/module-loader": "^0.3.2"
+    "@ecosystem/config": "^0.3.5",
+    "@ecosystem/module-loader": "^0.3.5"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.0",
