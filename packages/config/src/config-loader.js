@@ -133,16 +133,4 @@ export default class ConfigLoader {
   clearCache() {
     return (this._config = null);
   }
-
-  stop() {
-    return this.mc.stop();
-  }
-
-  alive() {
-    return this.mc.alive();
-  }
-
-  owner() {
-    return this.mc.owner();
-  }
 }
