@@ -137,4 +137,12 @@ export default class ConfigLoader {
   stop() {
     return this.mc.stop();
   }
+
+  alive() {
+    return this.mc.alive();
+  }
+
+  owner() {
+    return this.mc.owner();
+  }
 }
