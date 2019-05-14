@@ -18,12 +18,11 @@ export default class ModuleLoader {
     this.name = name;
   }
 
-  get moduleNames() {
-    if (this._moduleNames) return this._moduleNames;
+  getUnorderedModuleNames() {
     const projectPath = path.resolve(pkgDir.sync(process.cwd()));
     const pkg = require(path.resolve(projectPath, 'package.json'));
     const moduleNames = _.keys(pkg.dependencies);
-    this._moduleNames = _.filter(moduleNames, moduleName => {
+    return _.filter(moduleNames, moduleName => {
       return !!require(path.resolve(
         projectPath,
         'node_modules',
@@ -31,7 +30,6 @@ export default class ModuleLoader {
         'package.json'
       ))[this.name];
     });
-    return this._moduleNames;
   }
 
   getModulesGraph(modules) {
@@ -51,10 +49,10 @@ export default class ModuleLoader {
     );
   }
 
-  get modules() {
-    if (this._modules) return this._modules;
+  getModules() {
+    const unorderedModuleNames = this.getUnorderedModuleNames();
     const modules = _.reduce(
-      this.moduleNames,
+      unorderedModuleNames,
       (modules, moduleName) => {
         modules[moduleName] = new Module(moduleName, this.name, {
           configPath: this.configPath
@@ -66,7 +64,7 @@ export default class ModuleLoader {
     const graph = this.getModulesGraph(modules);
     const trailDuck = new TrailDuck(graph);
     const missingDependancies = _.xor(
-      this.moduleNames,
+      unorderedModuleNames,
       _.map(trailDuck.ordered, 'name')
     );
     if (missingDependancies.length) {
@@ -82,15 +80,28 @@ export default class ModuleLoader {
         )}'`
       );
     }
-    const orderedModules = _.reduce(
-      _.reverse(_.map(trailDuck.ordered, 'name')),
-      (orderedModules, moduleName) => {
-        orderedModules[moduleName] = modules[moduleName];
-        return orderedModules;
+    if (!this._moduleNames) {
+      this._moduleNames = _.map(trailDuck.ordered, 'name');
+    }
+    return _.reduce(
+      this._moduleNames,
+      (mappedModules, moduleName) => {
+        mappedModules[moduleName] = modules[moduleName];
+        return mappedModules;
       },
       {}
     );
-    this._modules = orderedModules;
+  }
+
+  get moduleNames() {
+    if (this._moduleNames) return this._moduleNames;
+    this._modules = this.getModules();
+    return this._moduleNames;
+  }
+
+  get modules() {
+    if (this._modules) return this._modules;
+    this._modules = this.getModules();
     return this._modules;
   }
 }
