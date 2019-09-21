@@ -1,6 +1,6 @@
 {
   "name": "hello",
-  "version": "0.0.1",
+  "version": "0.5.1",
   "private": true,
   "description": "print hello world",
   "keywords": [
@@ -44,11 +44,11 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.6.0",
+    "@ecosystem/config": "^0.5.1",
+    "@ecosystem/core": "^0.5.1",
     "@oclif/command": "^1.5.19",
     "@oclif/errors": "^1.2.2",
     "core-js": "^3.2.1",
-    "@ecosystem/config": "^0.5.1",
-    "@ecosystem/core": "^0.0.1",
     "ts-optchain.macro": "^1.1.5"
   },
   "devDependencies": {
