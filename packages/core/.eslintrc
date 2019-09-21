@@ -13,6 +13,7 @@
     "import/export": "off",
     "import/named": "off",
     "import/no-unresolved": "off",
+    "no-console": "off",
     "no-unused-vars": "off",
     "react/forbid-foreign-prop-types": "off",
     "react/jsx-wrap-multilines": "off",

@@ -1,9 +1,12 @@
 import Err from 'err';
+import ora from 'ora';
 import { Command, flags } from '@oclif/command';
 import { createConfig } from '@ecosystem/config';
+import { oc } from 'ts-optchain.macro';
 import {
   Actions as EcosystemActions,
-  Config as EcosystemConfig
+  Config as EcosystemConfig,
+  Logger
 } from './types';
 
 export default class Ecosystem<
@@ -12,15 +15,24 @@ export default class Ecosystem<
 > {
   config: Config;
 
+  logger: Logger;
+
   constructor(
     public name: string,
     public defaultConfig: Partial<Config>,
     public actions: Actions,
-    public command = Command
+    public command = Command,
+    logger: Partial<Logger> = {}
   ) {
     this.config = {
       ...defaultConfig
     } as Config;
+    this.logger = {
+      error: oc(logger).warn(console.error),
+      info: oc(logger).warn(console.info),
+      warn: oc(logger).warn(console.warn),
+      spinner: oc(logger).spinner(ora())
+    };
   }
 
   createConfig(runtimeConfig: Partial<Config>): Config {
@@ -54,11 +66,12 @@ export default class Ecosystem<
         const actionKeys = Object.keys(parent.actions);
         const action =
           args.ACTION || (actionKeys.length ? actionKeys[0] : null);
+        parent.config.action = action;
         parent.config.oclif = this.config;
         if (!parent.actions[action]) {
           throw new Err(`action '${action}' not found`, 400);
         }
-        await parent.actions[action](parent.config);
+        await parent.actions[action](parent.config, parent.logger);
       }
     }
     await EcosystemCommand.run();
