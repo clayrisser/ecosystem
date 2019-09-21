@@ -1,6 +1,5 @@
 {
   "name": "hello",
-  "version": "0.5.2",
   "private": true,
   "description": "print hello world",
   "keywords": [

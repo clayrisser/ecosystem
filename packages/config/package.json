@@ -78,5 +78,6 @@
     "setupFilesAfterEnv": [
       "./tests/_setup.ts"
     ]
-  }
+  },
+  "gitHead": "17cba18f6ae98ce3a2725d46b013457bb0d734ac"
 }
