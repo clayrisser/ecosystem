@@ -1,12 +1,12 @@
 {
-  "name": "@ecosystem/config",
-  "version": "0.5.1",
-  "description": "load config for ecosystem",
+  "name": "@ecosystem/core",
+  "version": "0.0.1",
+  "description": "ecosystem core",
   "keywords": [
     "ecosystem",
-    "config"
+    "core"
   ],
-  "homepage": "https://github.com/codejamninja/ecosystem/packages/config",
+  "homepage": "https://github.com/codejamninja/ecosystem/packages/core",
   "bugs": {
     "url": "https://github.com/codejamninja/ecosystem/issues",
     "email": "jam@codejam.ninja"
@@ -37,10 +37,14 @@
     "test": "npm run lint && jest --coverage"
   },
   "dependencies": {
+    "@ecosystem/config": "^0.5.1",
+    "@oclif/command": "^1.5.19",
+    "@oclif/config": "^1.13.3",
+    "@oclif/errors": "^1.2.2",
+    "@oclif/plugin-help": "^2.2.1",
     "core-js": "^3.2.1",
     "cosmiconfig": "^5.2.1",
     "err": "^2.1.11",
-    "merge-configuration": "^0.4.1",
     "pkg-dir": "^4.2.0",
     "ts-optchain.macro": "^1.1.5"
   },

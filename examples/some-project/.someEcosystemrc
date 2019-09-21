@@ -1,4 +1,0 @@
-module.exports = {
-  hello: f => f + '!',
-  howdy: 'texas'
-}

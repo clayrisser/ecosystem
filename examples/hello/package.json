@@ -1,12 +1,13 @@
 {
-  "name": "@ecosystem/config",
-  "version": "0.5.1",
-  "description": "load config for ecosystem",
+  "name": "hello",
+  "version": "0.0.1",
+  "private": true,
+  "description": "print hello world",
   "keywords": [
-    "ecosystem",
-    "config"
+    "hello",
+    "world"
   ],
-  "homepage": "https://github.com/codejamninja/ecosystem/packages/config",
+  "homepage": "https://github.com/codejamninja/ecosystem/examples/hello",
   "bugs": {
     "url": "https://github.com/codejamninja/ecosystem/issues",
     "email": "jam@codejam.ninja"
@@ -18,9 +19,13 @@
     "url": "https://codejam.ninja"
   },
   "files": [
+    "bin.js",
     "lib"
   ],
   "main": "lib/index.js",
+  "bin": {
+    "hello": "bin.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/codejamninja/ecosystem"
@@ -28,40 +33,43 @@
   "scripts": {
     "babel": "babel-node --extensions \".ts,.tsx\"",
     "build": "npm run test && babel src -d lib --extensions \".ts,.tsx\" --source-maps inline && tsc -d --emitDeclarationOnly",
-    "clean": "git clean -fXd -e \\!node_modules -e \\!node_modules/**/* && jest --clearCache",
-    "clean:purge": "jest --clearCache && git clean -fXd",
+    "clean": "git clean -fXd -e \\!node_modules -e \\!node_modules/**/*",
+    "clean:purge": "git clean -fXd",
     "format": "prettier --write ./**/*.{json,md,scss,yaml,yml,js,jsx,ts,tsx} --ignore-path .gitignore",
     "lint": "npm run format && tsc --allowJs --noEmit && eslint --ext .ts,.tsx ./",
     "lint:fix": "npm run format && tsc --noEmit && eslint --ext .ts,.tsx --fix ./",
     "prepublish": "npm run build",
-    "test": "npm run lint && jest --coverage"
+    "start": "babel-node --extensions \".ts,.tsx\" src/bin",
+    "test": "npm run lint"
   },
   "dependencies": {
+    "@babel/polyfill": "^7.6.0",
+    "@oclif/command": "^1.5.19",
+    "@oclif/errors": "^1.2.2",
     "core-js": "^3.2.1",
-    "cosmiconfig": "^5.2.1",
-    "err": "^2.1.11",
-    "merge-configuration": "^0.4.1",
-    "pkg-dir": "^4.2.0",
+    "@ecosystem/config": "^0.5.1",
+    "@ecosystem/core": "^0.0.1",
     "ts-optchain.macro": "^1.1.5"
   },
   "devDependencies": {
     "@babel/cli": "^7.6.0",
     "@babel/core": "^7.6.0",
     "@babel/node": "^7.6.0",
+    "@babel/preset-react": "^7.0.0",
     "@babel/preset-typescript": "^7.6.0",
+    "@types/babel-generator": "^6.25.3",
     "@types/cosmiconfig": "^5.0.3",
-    "@types/jest": "^24.0.18",
+    "@types/lodash": "^4.14.138",
     "@types/node": "^12.7.4",
+    "@types/react": "^16.9.2",
     "@typescript-eslint/eslint-plugin": "^2.1.0",
     "@typescript-eslint/parser": "^2.1.0",
     "babel-preset-jam": "^0.4.3",
     "eslint": "^6.3.0",
     "eslint-config-airbnb-typescript": "^4.0.1",
     "eslint-config-jam": "^0.2.19",
-    "eslint-plugin-jest": "^22.17.0",
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-react": "^7.14.3",
-    "jest": "^24.9.0",
     "prettier": "^1.18.2",
     "tsc": "^1.20150623.0",
     "typescript": "^3.6.2"
@@ -71,12 +79,5 @@
   },
   "eslintIgnore": [
     "lib"
-  ],
-  "jest": {
-    "testRegex": "((tests(/|/.*/)[^_/]*)|\\.spec)\\.[jt]sx?$",
-    "verbose": true,
-    "setupFilesAfterEnv": [
-      "./tests/_setup.ts"
-    ]
-  }
+  ]
 }
