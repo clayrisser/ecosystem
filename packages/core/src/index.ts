@@ -3,6 +3,7 @@ import ora from 'ora';
 import { Command, flags } from '@oclif/command';
 import { createConfig } from '@ecosystem/config';
 import { oc } from 'ts-optchain.macro';
+import { safeLoad } from 'js-yaml';
 import {
   Actions as EcosystemActions,
   Config as EcosystemConfig,
@@ -44,11 +45,11 @@ export default class Ecosystem<
   }
 
   async run(runtimeConfig: Partial<Config> = {}) {
-    this.createConfig(runtimeConfig);
     const parent = (this as unknown) as Ecosystem;
     const LoadedCommand = this.command;
     class EcosystemCommand extends this.command {
       static flags = {
+        config: flags.string({ char: 'c' }),
         help: flags.help({ char: 'h' }),
         verbose: flags.boolean(),
         version: flags.version({ char: 'v' }),
@@ -62,7 +63,11 @@ export default class Ecosystem<
 
       async run() {
         await LoadedCommand.run();
-        const { args } = this.parse(EcosystemCommand);
+        const { args, flags } = this.parse(EcosystemCommand);
+        parent.createConfig({
+          ...runtimeConfig,
+          ...(flags.config ? safeLoad(flags.config) : {})
+        });
         const actionKeys = Object.keys(parent.actions);
         const action =
           args.ACTION || (actionKeys.length ? actionKeys[0] : null);
