@@ -1,16 +1,19 @@
 import cosmiconfig from 'cosmiconfig';
+import MultithreadConfig from 'multithread-config';
+import mergeConfiguration from 'merge-configuration';
 import pkgDir from 'pkg-dir';
 import { oc } from 'ts-optchain.macro';
-import mergeConfiguration from 'merge-configuration';
 import { BaseConfig } from './types';
 
+const mc = new MultithreadConfig();
 const rootPath = pkgDir.sync(process.cwd()) || process.cwd();
 
-export function createConfig<Config = BaseConfig>(
+export async function createConfig<Config = BaseConfig>(
   name: string,
   defaultConfig: Partial<Config> = {},
   runtimeConfig: Partial<Config> = {}
-): Config {
+): Promise<Config> {
+  await start();
   const userConfig: Partial<Config> = oc(
     cosmiconfig(name).searchSync(rootPath)
   ).config({}) as Partial<Config>;
@@ -19,7 +22,21 @@ export function createConfig<Config = BaseConfig>(
     rootPath
   } as Partial<Config>;
   config = mergeConfiguration<Partial<Config>>(config, userConfig);
-  return mergeConfiguration<Config>(config, runtimeConfig);
+  return mc.setConfig<Config>(
+    mergeConfiguration<Config>(config, runtimeConfig)
+  );
+}
+
+export async function getConfig(): Promise<Config> {
+  return mc.getConfig();
+}
+
+export async function start() {
+  return mc.start();
+}
+
+export function stop() {
+  return mc.stop();
 }
 
 export * from './types';

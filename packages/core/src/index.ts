@@ -1,7 +1,7 @@
 import Err from 'err';
 import ora from 'ora';
 import { Command, flags } from '@oclif/command';
-import { createConfig } from '@ecosystem/config';
+import { createConfig, stop } from '@ecosystem/config';
 import { oc } from 'ts-optchain.macro';
 import { safeLoad } from 'js-yaml';
 import {
@@ -36,10 +36,14 @@ export default class Ecosystem<
     };
   }
 
-  createConfig(runtimeConfig: Partial<Config>): Config {
+  async createConfig(runtimeConfig: Partial<Config>): Promise<Config> {
     this.config = {
       ...this.config,
-      ...createConfig<Config>(this.name, this.defaultConfig, runtimeConfig)
+      ...(await createConfig<Config>(
+        this.name,
+        this.defaultConfig,
+        runtimeConfig
+      ))
     };
     return this.config;
   }
@@ -64,7 +68,7 @@ export default class Ecosystem<
       async run() {
         await LoadedCommand.run();
         const { args, flags } = this.parse(EcosystemCommand);
-        parent.createConfig({
+        await parent.createConfig({
           ...runtimeConfig,
           ...(flags.config ? safeLoad(flags.config) : {})
         });
@@ -80,6 +84,7 @@ export default class Ecosystem<
       }
     }
     await EcosystemCommand.run();
+    stop();
   }
 }
 
