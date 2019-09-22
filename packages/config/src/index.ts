@@ -27,8 +27,8 @@ export async function createConfig<Config = BaseConfig>(
   );
 }
 
-export async function getConfig(): Promise<Config> {
-  return mc.getConfig();
+export async function getConfig<Config = BaseConfig>(): Promise<Config> {
+  return mc.getConfig<Config>();
 }
 
 export async function start() {
