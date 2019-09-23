@@ -7,7 +7,7 @@ declare class MultithreadConfig {
 
   start(): Promise<void>;
 
-  stop(): void;
+  finish(): Promise<void>;
 }
 
 declare interface Config {

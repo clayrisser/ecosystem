@@ -1,7 +1,7 @@
 import Err from 'err';
 import ora from 'ora';
 import { Command, flags } from '@oclif/command';
-import { createConfig, stop } from '@ecosystem/config';
+import { createConfig, finish } from '@ecosystem/config';
 import { oc } from 'ts-optchain.macro';
 import { safeLoad } from 'js-yaml';
 import {
@@ -84,7 +84,7 @@ export default class Ecosystem<
       }
     }
     await EcosystemCommand.run();
-    stop();
+    await finish();
   }
 }
 

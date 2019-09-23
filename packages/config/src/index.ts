@@ -13,7 +13,6 @@ export async function createConfig<Config = BaseConfig>(
   defaultConfig: Partial<Config> = {},
   runtimeConfig: Partial<Config> = {}
 ): Promise<Config> {
-  await start();
   const userConfig: Partial<Config> = oc(
     cosmiconfig(name).searchSync(rootPath)
   ).config({}) as Partial<Config>;
@@ -35,8 +34,8 @@ export async function start() {
   return mc.start();
 }
 
-export function stop() {
-  return mc.stop();
+export async function finish() {
+  return mc.finish();
 }
 
 export * from './types';
