@@ -1,6 +1,7 @@
 import Err from 'err';
 import ora from 'ora';
 import { Command, flags } from '@oclif/command';
+import { LoadOptions } from '@oclif/config';
 import { createConfig, finish } from '@ecosystem/config';
 import { oc } from 'ts-optchain.macro';
 import { safeLoad } from 'js-yaml';
@@ -51,7 +52,7 @@ export default class Ecosystem<
   async run(runtimeConfig: Partial<Config> = {}) {
     const parent = (this as unknown) as Ecosystem;
     const LoadedCommand = this.command;
-    class EcosystemCommand extends this.command {
+    class EcosystemCommand extends LoadedCommand {
       static flags = {
         config: flags.string({ char: 'c' }),
         help: flags.help({ char: 'h' }),
@@ -65,10 +66,10 @@ export default class Ecosystem<
         ...(typeof LoadedCommand.args !== 'undefined' ? LoadedCommand.args : [])
       ];
 
-      async run() {
+      async run(argv?: string[], options?: LoadOptions) {
         runtimeConfig = {
           ...runtimeConfig,
-          ...oc(await LoadedCommand.run()).runtimeConfig({})
+          ...oc(await LoadedCommand.run(argv, options)).runtimeConfig({})
         };
         const { args, flags } = this.parse(EcosystemCommand);
         await parent.createConfig({
