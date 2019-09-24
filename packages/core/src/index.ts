@@ -2,9 +2,14 @@ import Err from 'err';
 import ora from 'ora';
 import { Command as OclifCommand, flags } from '@oclif/command';
 import { LoadOptions } from '@oclif/config';
-import { createConfig, finish } from '@ecosystem/config';
 import { oc } from 'ts-optchain.macro';
 import { safeLoad } from 'js-yaml';
+import {
+  createConfig,
+  finish,
+  getConfig,
+  updateConfig
+} from '@ecosystem/config';
 import {
   Actions as EcosystemActions,
   Config as EcosystemConfig,
@@ -13,15 +18,19 @@ import {
 
 export abstract class Command extends OclifCommand {
   static EcosystemCommand: typeof Command;
+
+  static Ecosystem: typeof Ecosystem;
+
+  static ecosystem: Ecosystem;
 }
 
 export default class Ecosystem<
   Config = EcosystemConfig,
   Actions = EcosystemActions
 > {
-  config: Config;
-
   logger: Logger;
+
+  private _createdConfig = false;
 
   constructor(
     public name: string,
@@ -30,9 +39,6 @@ export default class Ecosystem<
     public command = Command,
     logger: Partial<Logger> = {}
   ) {
-    this.config = {
-      ...defaultConfig
-    } as Config;
     this.logger = {
       debug: oc(logger).warn(console.debug),
       error: oc(logger).warn(console.error),
@@ -43,16 +49,24 @@ export default class Ecosystem<
     };
   }
 
-  async createConfig(runtimeConfig: Partial<Config>): Promise<Config> {
-    this.config = {
-      ...this.config,
-      ...(await createConfig<Config>(
-        this.name,
-        this.defaultConfig,
-        runtimeConfig
-      ))
-    };
-    return this.config;
+  async updateConfig(config: Partial<Config>): Promise<Config> {
+    if (!this._createdConfig) await this.createConfig();
+    return updateConfig<Config>(config);
+  }
+
+  async getConfig(): Promise<Config> {
+    if (!this._createdConfig) await this.createConfig();
+    return getConfig<Config>();
+  }
+
+  async createConfig(runtimeConfig: Partial<Config> = {}): Promise<Config> {
+    const config = await createConfig<Config>(
+      this.name,
+      this.defaultConfig,
+      runtimeConfig
+    );
+    this._createdConfig = true;
+    return config;
   }
 
   async run(runtimeConfig: Partial<Config> = {}) {
@@ -78,22 +92,24 @@ export default class Ecosystem<
           ...oc(await LoadedCommand.run(argv, options)).runtimeConfig({})
         };
         const { args, flags } = this.parse(EcosystemCommand);
-        await parent.createConfig({
-          ...runtimeConfig,
-          ...(flags.config ? safeLoad(flags.config) : {})
-        });
         const actionKeys = Object.keys(parent.actions);
         const action =
           args.ACTION || (actionKeys.length ? actionKeys[0] : null);
-        parent.config.action = action;
-        parent.config.oclif = this.config;
+        const config = await parent.createConfig({
+          ...runtimeConfig,
+          ...(flags.config ? safeLoad(flags.config) : {}),
+          action,
+          oclif: this.config
+        });
         if (!parent.actions[action]) {
           throw new Err(`action '${action}' not found`, 400);
         }
-        await parent.actions[action](parent.config, parent.logger);
+        await parent.actions[action](config, parent.logger);
       }
     }
+    LoadedCommand.Ecosystem = Ecosystem;
     LoadedCommand.EcosystemCommand = EcosystemCommand;
+    LoadedCommand.ecosystem = parent;
     await EcosystemCommand.run();
     await finish();
   }

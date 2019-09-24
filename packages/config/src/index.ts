@@ -30,6 +30,14 @@ export async function getConfig<Config = BaseConfig>(): Promise<Config> {
   return mc.getConfig<Config>();
 }
 
+export async function updateConfig<Config = BaseConfig>(
+  config: Partial<Config>
+): Promise<Config> {
+  return mc.setConfig<Config>(
+    mergeConfiguration<Config>(await getConfig<Config>(), config)
+  );
+}
+
 export async function start() {
   return mc.start();
 }
