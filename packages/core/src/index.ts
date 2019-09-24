@@ -1,6 +1,6 @@
 import Err from 'err';
 import ora from 'ora';
-import { Command, flags } from '@oclif/command';
+import { Command as OclifCommand, flags } from '@oclif/command';
 import { LoadOptions } from '@oclif/config';
 import { createConfig, finish } from '@ecosystem/config';
 import { oc } from 'ts-optchain.macro';
@@ -10,6 +10,10 @@ import {
   Config as EcosystemConfig,
   Logger
 } from './types';
+
+export abstract class Command extends OclifCommand {
+  static EcosystemCommand: Command;
+}
 
 export default class Ecosystem<
   Config = EcosystemConfig,
@@ -51,7 +55,7 @@ export default class Ecosystem<
 
   async run(runtimeConfig: Partial<Config> = {}) {
     const parent = (this as unknown) as Ecosystem;
-    const LoadedCommand = this.command;
+    const LoadedCommand: typeof Command = this.command;
     class EcosystemCommand extends LoadedCommand {
       static flags = {
         config: flags.string({ char: 'c' }),
@@ -87,6 +91,7 @@ export default class Ecosystem<
         await parent.actions[action](parent.config, parent.logger);
       }
     }
+    LoadedCommand.EcosystemCommand = (EcosystemCommand as unknown) as Command;
     await EcosystemCommand.run();
     await finish();
   }

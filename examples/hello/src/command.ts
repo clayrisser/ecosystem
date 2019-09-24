@@ -1,6 +1,7 @@
-import { Command as OclifCommand, flags } from '@oclif/command';
+import { Command as EcosystemCommand } from '@ecosystem/core';
+import { flags } from '@oclif/command';
 
-export default class Command extends OclifCommand {
+export default class Command extends EcosystemCommand {
   static description = 'print hello world';
 
   static flags = {
