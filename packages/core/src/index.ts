@@ -66,7 +66,10 @@ export default class Ecosystem<
       ];
 
       async run() {
-        await LoadedCommand.run();
+        runtimeConfig = {
+          ...runtimeConfig,
+          ...oc(await LoadedCommand.run()).runtimeConfig({})
+        };
         const { args, flags } = this.parse(EcosystemCommand);
         await parent.createConfig({
           ...runtimeConfig,
