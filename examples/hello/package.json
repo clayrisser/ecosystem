@@ -1,6 +1,6 @@
 {
   "name": "hello",
-  "version": "0.5.12",
+  "version": "0.5.13",
   "private": true,
   "description": "print hello world",
   "keywords": [
@@ -45,7 +45,7 @@
   "dependencies": {
     "@babel/polyfill": "^7.6.0",
     "@ecosystem/config": "^0.5.10",
-    "@ecosystem/core": "^0.5.12",
+    "@ecosystem/core": "^0.5.13",
     "@oclif/command": "^1.5.19",
     "@oclif/errors": "^1.2.2",
     "core-js": "^3.2.1",
