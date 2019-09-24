@@ -12,7 +12,7 @@ import {
 } from './types';
 
 export abstract class Command extends OclifCommand {
-  static EcosystemCommand: Command;
+  static EcosystemCommand: typeof Command;
 }
 
 export default class Ecosystem<
@@ -91,7 +91,7 @@ export default class Ecosystem<
         await parent.actions[action](parent.config, parent.logger);
       }
     }
-    LoadedCommand.EcosystemCommand = (EcosystemCommand as unknown) as Command;
+    LoadedCommand.EcosystemCommand = EcosystemCommand;
     await EcosystemCommand.run();
     await finish();
   }
