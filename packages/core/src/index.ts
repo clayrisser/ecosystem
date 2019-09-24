@@ -49,20 +49,20 @@ export default class Ecosystem<
     };
   }
 
-  async updateConfig(config: Partial<Config>): Promise<Config> {
+  async updateConfig<T = Config>(config: Partial<T>): Promise<T> {
     if (!this._createdConfig) await this.createConfig();
-    return updateConfig<Config>(config);
+    return updateConfig<T>(config);
   }
 
-  async getConfig(): Promise<Config> {
+  async getConfig<T = Config>(): Promise<T> {
     if (!this._createdConfig) await this.createConfig();
-    return getConfig<Config>();
+    return getConfig<T>();
   }
 
-  async createConfig(runtimeConfig: Partial<Config> = {}): Promise<Config> {
-    const config = await createConfig<Config>(
+  async createConfig<T = Config>(runtimeConfig: Partial<T> = {}): Promise<T> {
+    const config = await createConfig<T>(
       this.name,
-      this.defaultConfig,
+      this.defaultConfig as T,
       runtimeConfig
     );
     this._createdConfig = true;
