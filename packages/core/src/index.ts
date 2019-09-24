@@ -34,10 +34,12 @@ export default class Ecosystem<
       ...defaultConfig
     } as Config;
     this.logger = {
+      debug: oc(logger).warn(console.debug),
       error: oc(logger).warn(console.error),
       info: oc(logger).warn(console.info),
-      warn: oc(logger).warn(console.warn),
-      spinner: oc(logger).spinner(ora())
+      silly: oc(logger).warn(console.log),
+      spinner: oc(logger).spinner(ora()),
+      warn: oc(logger).warn(console.warn)
     };
   }
 

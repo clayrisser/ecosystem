@@ -16,6 +16,8 @@ export interface Actions<TConfig = Config> {
 }
 
 export interface Logger {
+  debug(message?: any, ...optionalParams: any[]): any;
+  silly(message?: any, ...optionalParams: any[]): any;
   error(message?: any, ...optionalParams: any[]): any;
   info(message?: any, ...optionalParams: any[]): any;
   spinner: Spinner;
