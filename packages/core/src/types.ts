@@ -26,7 +26,9 @@ export interface Logger {
 
 export interface Spinner {
   fail(message?: string): Spinner;
+  info(message?: string): Spinner;
   start(message?: string): Spinner;
   stop(): any;
   succeed(message?: string): Spinner;
+  warn(message?: string): Spinner;
 }
