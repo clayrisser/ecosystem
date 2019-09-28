@@ -37,6 +37,8 @@ export default class Ecosystem<
     public defaultConfig: Partial<Config>,
     public actions: Actions,
     public command = Command,
+    public preProcess: <T = Config>(config: T) => T | Promise<T> = f => f,
+    public postProcess: <T = Config>(config: T) => T | Promise<T> = f => f,
     logger: Partial<Logger> = {}
   ) {
     this.logger = {
@@ -51,19 +53,21 @@ export default class Ecosystem<
 
   async updateConfig<T = Config>(config: Partial<T>): Promise<T> {
     if (!this._createdConfig) await this.createConfig();
-    return updateConfig<T>(config);
+    return updateConfig<T>(config, this.preProcess, this.postProcess);
   }
 
   async getConfig<T = Config>(): Promise<T> {
     if (!this._createdConfig) await this.createConfig();
-    return getConfig<T>();
+    return getConfig<T>(this.postProcess);
   }
 
   async createConfig<T = Config>(runtimeConfig: Partial<T> = {}): Promise<T> {
     const config = await createConfig<T>(
       this.name,
       this.defaultConfig as T,
-      runtimeConfig
+      runtimeConfig,
+      this.preProcess,
+      this.postProcess
     );
     this._createdConfig = true;
     return config;
