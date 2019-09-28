@@ -28,6 +28,10 @@ export async function createConfig<Config = BaseConfig>(
   return mc.setConfig(mergeConfiguration<Config>(config, runtimeConfig));
 }
 
+export function isOwner(): boolean {
+  return mc.isOwner;
+}
+
 export async function getConfig<Config = BaseConfig>(
   postProcess?: <T = Config>(config: T) => T | Promise<T>
 ): Promise<Config> {
