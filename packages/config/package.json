@@ -1,6 +1,6 @@
 {
   "name": "@ecosystem/config",
-  "version": "0.5.20",
+  "version": "0.5.21",
   "description": "load config for ecosystem",
   "keywords": [
     "ecosystem",
