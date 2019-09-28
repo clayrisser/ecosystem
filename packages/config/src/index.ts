@@ -28,8 +28,8 @@ export async function createConfig<Config = BaseConfig>(
   return mc.setConfig(mergeConfiguration<Config>(config, runtimeConfig));
 }
 
-export function isOwner(): boolean {
-  return mc.isOwner;
+export function isMaster(): boolean {
+  return mc.isMaster();
 }
 
 export async function getConfig<Config = BaseConfig>(
