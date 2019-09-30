@@ -8,7 +8,8 @@ export interface Config extends BaseConfig {
 
 export type Action<TConfig = Config> = (
   config: TConfig,
-  logger?: Logger
+  logger?: Logger,
+  ...additionalArgs: any[]
 ) => any;
 
 export interface Actions<TConfig = Config> {

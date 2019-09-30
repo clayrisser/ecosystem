@@ -39,7 +39,8 @@ export default class Ecosystem<
     public command = Command,
     public preProcess: <T = Config>(config: T) => T | Promise<T> = f => f,
     public postProcess: <T = Config>(config: T) => T | Promise<T> = f => f,
-    logger: Partial<Logger> = {}
+    logger: Partial<Logger> = {},
+    public additionalArgs: any[] = []
   ) {
     this.logger = {
       debug: oc(logger).warn(console.debug),
@@ -108,7 +109,11 @@ export default class Ecosystem<
         if (!parent.actions[action]) {
           throw new Err(`action '${action}' not found`, 400);
         }
-        await parent.actions[action](config, parent.logger);
+        await parent.actions[action](
+          config,
+          parent.logger,
+          ...parent.additionalArgs
+        );
       }
     }
     LoadedCommand.Ecosystem = Ecosystem;
