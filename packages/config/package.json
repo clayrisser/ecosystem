@@ -42,7 +42,7 @@
     "err": "^2.1.11",
     "is-promise": "^2.1.0",
     "merge-configuration": "^0.4.1",
-    "multithread-config": "^0.7.0",
+    "multithread-config": "^0.7.1",
     "node-ipc": "^9.1.1",
     "pkg-dir": "^4.2.0",
     "ts-optchain.macro": "^1.1.5"

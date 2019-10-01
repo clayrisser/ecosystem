@@ -20,6 +20,11 @@ export function isMaster(): boolean {
   return mc.isMaster();
 }
 
+export function isStarted(): boolean {
+  const mc = getMc();
+  return mc.isStarted;
+}
+
 export function getMcFilesystem(): MultithreadConfig {
   if (mcFilesystem) return mcFilesystem;
   if (mcSocket) {
@@ -122,7 +127,9 @@ export function createConfigSync<Config = BaseConfig>(
   postProcess?: <T = Config>(config: T) => T
 ): Config {
   const mc = getMcFilesystem();
-  if (!isMaster()) throw new Err('only master process can create config');
+  if (isStarted() && !isMaster()) {
+    throw new Err('only master process can create config');
+  }
   if (preProcess) mc.preProcess = preProcess;
   const config = buildConfigSync<Config>(
     name,
@@ -142,7 +149,9 @@ export async function createConfig<Config = BaseConfig>(
   postProcess?: <T = Config>(config: T) => T | Promise<T>
 ): Promise<Config> {
   const mc = getMc();
-  if (!isMaster()) throw new Err('only master process can create config');
+  if (isStarted() && !isMaster()) {
+    throw new Err('only master process can create config');
+  }
   if (preProcess) mc.preProcess = preProcess;
   const config = await buildConfig<Config>(
     name,
