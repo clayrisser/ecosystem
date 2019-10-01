@@ -14,6 +14,11 @@ export function getMc(): MultithreadConfig {
   return mcSocket || mcFilesystem;
 }
 
+export function isMaster(): boolean {
+  const mc = getMc();
+  return mc.isMaster();
+}
+
 export function getMcFilesystem(): MultithreadConfig {
   if (mcFilesystem) return mcFilesystem;
   if (mcSocket) {
@@ -101,8 +106,8 @@ export function createConfigSync<Config = BaseConfig>(
   name: string,
   defaultConfig: Partial<Config> = {},
   runtimeConfig: Partial<Config> = {},
-  preProcess?: <T = Config>(config: T) => T,
-  postProcess?: <T = Config>(config: T) => T
+  preProcess?: <T = Config>(config: T) => T | Promise<T>,
+  postProcess?: <T = Config>(config: T) => T | Promise<T>
 ): Config {
   const mc = getMcFilesystem();
   if (!isMaster()) throw new Err('only master process can create config');
@@ -137,11 +142,6 @@ export async function createConfig<Config = BaseConfig>(
   return mc.setConfig(config);
 }
 
-export function isMaster(): boolean {
-  const mc = getMc();
-  return mc.isMaster();
-}
-
 export function getConfigSync<Config = BaseConfig>(
   name: string,
   postProcess?: <T = Config>(config: T) => T | Promise<T>
@@ -152,11 +152,12 @@ export function getConfigSync<Config = BaseConfig>(
 }
 
 export async function getConfig<Config = BaseConfig>(
+  name: string,
   postProcess?: <T = Config>(config: T) => T | Promise<T>
 ): Promise<Config> {
   const mc = getMc();
   if (postProcess) mc.postProcess = postProcess;
-  return mc.getConfig();
+  return buildConfig(name);
 }
 
 export function updateConfigSync<Config = BaseConfig>(
@@ -175,6 +176,7 @@ export function updateConfigSync<Config = BaseConfig>(
 }
 
 export async function updateConfig<Config = BaseConfig>(
+  name: string,
   config: Partial<Config>,
   preProcess?: <T = Config>(config: T) => T | Promise<T>,
   postProcess?: <T = Config>(config: T) => T | Promise<T>
@@ -184,7 +186,7 @@ export async function updateConfig<Config = BaseConfig>(
   if (preProcess) mc.preProcess = preProcess;
   if (postProcess) mc.postProcess = postProcess;
   return mc.setConfig(
-    mergeConfiguration<Config>(await getConfig<Config>(), config)
+    mergeConfiguration<Config>(await getConfig<Config>(name), config)
   );
 }
 

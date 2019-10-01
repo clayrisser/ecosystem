@@ -59,23 +59,33 @@ export default class Ecosystem<
   updateConfigSync<T = Config>(config: Partial<T>): T {
     if (this.socket) throw new Err('sync is disabled when using socket');
     if (!this._createdConfig) this.createConfigSync();
-    return updateConfigSync<T>(config, this.preProcess, this.postProcess);
+    return updateConfigSync<T>(
+      this.name,
+      config,
+      this.preProcess,
+      this.postProcess
+    );
   }
 
   async updateConfig<T = Config>(config: Partial<T>): Promise<T> {
     if (!this._createdConfig) await this.createConfig();
-    return updateConfig<T>(config, this.preProcess, this.postProcess);
+    return updateConfig<T>(
+      this.name,
+      config,
+      this.preProcess,
+      this.postProcess
+    );
   }
 
   getConfigSync<T = Config>(): T {
     if (this.socket) throw new Err('sync is disabled when using socket');
     if (!this._createdConfig) this.createConfigSync();
-    return getConfigSync<T>(this.postProcess);
+    return getConfigSync<T>(this.name, this.postProcess);
   }
 
   async getConfig<T = Config>(): Promise<T> {
     if (!this._createdConfig) await this.createConfig();
-    return getConfig<T>(this.postProcess);
+    return getConfig<T>(this.name, this.postProcess);
   }
 
   createConfigSync<T = Config>(runtimeConfig: Partial<T> = {}): T {
