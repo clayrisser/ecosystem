@@ -131,14 +131,16 @@ export function createConfigSync<Config = BaseConfig>(
     throw new Err('only master process can create config');
   }
   if (preProcess) mc.preProcess = preProcess;
-  const config = buildConfigSync<Config>(
+  const config = buildConfigSync<BaseConfig>(
     name,
     defaultConfig,
     runtimeConfig,
     true,
     postProcess
   );
-  return mc.setConfigSync(config);
+  config._defaultConfig = defaultConfig;
+  config._runtimeConfig = runtimeConfig;
+  return (mc.setConfigSync(config) as unknown) as Config;
 }
 
 export async function createConfig<Config = BaseConfig>(
@@ -153,14 +155,16 @@ export async function createConfig<Config = BaseConfig>(
     throw new Err('only master process can create config');
   }
   if (preProcess) mc.preProcess = preProcess;
-  const config = await buildConfig<Config>(
+  const config = await buildConfig<BaseConfig>(
     name,
     defaultConfig,
     runtimeConfig,
     true,
     postProcess
   );
-  return mc.setConfig(config);
+  config._defaultConfig = defaultConfig;
+  config._runtimeConfig = runtimeConfig;
+  return (mc.setConfig(config) as unknown) as Config;
 }
 
 export function getConfigSync<Config = BaseConfig>(
