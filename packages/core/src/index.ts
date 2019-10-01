@@ -8,7 +8,6 @@ import {
   createConfig,
   createConfigSync,
   finish,
-  finishSync,
   getConfig,
   getConfigSync,
   updateConfig,
@@ -41,7 +40,7 @@ export default class Ecosystem<
     public defaultConfig: Partial<Config>,
     public actions: Actions,
     public command = Command,
-    public sync = false,
+    public socket = true,
     public preProcess: <T = Config>(config: T) => T | Promise<T> = f => f,
     public postProcess: <T = Config>(config: T) => T | Promise<T> = f => f,
     logger: Partial<Logger> = {},
@@ -58,31 +57,29 @@ export default class Ecosystem<
   }
 
   updateConfigSync<T = Config>(config: Partial<T>): T {
-    if (!this.sync) throw new Err('sync is disabled');
+    if (this.socket) throw new Err('sync is disabled when using socket');
     if (!this._createdConfig) this.createConfigSync();
     return updateConfigSync<T>(config, this.preProcess, this.postProcess);
   }
 
   async updateConfig<T = Config>(config: Partial<T>): Promise<T> {
-    if (this.sync) throw new Err('sync is enabled');
     if (!this._createdConfig) await this.createConfig();
     return updateConfig<T>(config, this.preProcess, this.postProcess);
   }
 
   getConfigSync<T = Config>(): T {
-    if (!this.sync) throw new Err('sync is disabled');
+    if (this.socket) throw new Err('sync is disabled when using socket');
     if (!this._createdConfig) this.createConfigSync();
     return getConfigSync<T>(this.postProcess);
   }
 
   async getConfig<T = Config>(): Promise<T> {
-    if (this.sync) throw new Err('sync is enabled');
     if (!this._createdConfig) await this.createConfig();
     return getConfig<T>(this.postProcess);
   }
 
   createConfigSync<T = Config>(runtimeConfig: Partial<T> = {}): T {
-    if (!this.sync) throw new Err('sync is disabled');
+    if (this.socket) throw new Err('sync is disabled when using socket');
     const config = createConfigSync<T>(
       this.name,
       this.defaultConfig as T,
@@ -95,7 +92,6 @@ export default class Ecosystem<
   }
 
   async createConfig<T = Config>(runtimeConfig: Partial<T> = {}): Promise<T> {
-    if (this.sync) throw new Err('sync is enabled');
     const config = await createConfig<T>(
       this.name,
       this.defaultConfig as T,
@@ -133,22 +129,12 @@ export default class Ecosystem<
         const actionKeys = Object.keys(parent.actions);
         const action =
           args.ACTION || (actionKeys.length ? actionKeys[0] : null);
-        let config;
-        if (parent.sync) {
-          config = parent.createConfigSync({
-            ...runtimeConfig,
-            ...(flags.config ? safeLoad(flags.config) : {}),
-            action,
-            oclif: this.config
-          });
-        } else {
-          config = await parent.createConfig({
-            ...runtimeConfig,
-            ...(flags.config ? safeLoad(flags.config) : {}),
-            action,
-            oclif: this.config
-          });
-        }
+        const config = await parent.createConfig({
+          ...runtimeConfig,
+          ...(flags.config ? safeLoad(flags.config) : {}),
+          action,
+          oclif: this.config
+        });
         if (!parent.actions[action]) {
           throw new Err(`action '${action}' not found`, 400);
         }
@@ -163,11 +149,7 @@ export default class Ecosystem<
     LoadedCommand.EcosystemCommand = EcosystemCommand;
     LoadedCommand.ecosystem = parent;
     await EcosystemCommand.run();
-    if (this.sync) {
-      finishSync();
-    } else {
-      await finish();
-    }
+    await finish();
   }
 }
 

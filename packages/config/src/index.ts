@@ -6,33 +6,39 @@ import pkgDir from 'pkg-dir';
 import { oc } from 'ts-optchain.macro';
 import { BaseConfig } from './types';
 
-let mcAsync: MultithreadConfig;
-let mcSync: MultithreadConfig;
+let mcSocket: MultithreadConfig;
+let mcFilesystem: MultithreadConfig;
 const rootPath = pkgDir.sync(process.cwd()) || process.cwd();
 
 export function getMc(): MultithreadConfig {
-  return mcAsync || mcSync;
+  return mcSocket || mcFilesystem;
 }
 
-export function getMcSync(): MultithreadConfig {
-  if (mcAsync) {
-    throw new Err('multithread sync is incompatible with multithread async');
+export function getMcFilesystem(): MultithreadConfig {
+  if (mcFilesystem) return mcFilesystem;
+  if (mcSocket) {
+    throw new Err(
+      'multithread socket is incompatible with multithread filesystem'
+    );
   }
-  if (mcSync) return mcSync;
-  mcSync = new MultithreadConfig<BaseConfig>({
-    sync: true,
-    socket: false
-  });
-  return mcSync;
+  mcFilesystem = new MultithreadConfig<BaseConfig>({ socket: false });
+  return mcFilesystem;
 }
 
-export function getMcAsync(): MultithreadConfig {
-  if (mcSync) {
-    throw new Err('multithread async is incompatible with multithread sync');
+export function getMcSocket(): MultithreadConfig {
+  if (mcSocket) return mcSocket;
+  if (mcFilesystem) {
+    throw new Err(
+      'multithread socket is incompatible with multithread filesystem'
+    );
   }
-  if (mcAsync) return mcAsync;
-  mcAsync = new MultithreadConfig<BaseConfig>();
-  return mcAsync;
+  mcSocket = new MultithreadConfig<BaseConfig>();
+  return mcSocket;
+}
+
+export function activate(socket = false) {
+  if (socket) return getMcSocket();
+  return getMcFilesystem();
 }
 
 export function createConfigSync<Config = BaseConfig>(
@@ -42,7 +48,7 @@ export function createConfigSync<Config = BaseConfig>(
   preProcess?: <T = Config>(config: T) => T | Promise<T>,
   postProcess?: <T = Config>(config: T) => T | Promise<T>
 ): Config {
-  const mc = getMcSync();
+  const mc = getMcFilesystem();
   if (preProcess) mc.preProcess = preProcess;
   if (postProcess) mc.postProcess = postProcess;
   const userConfig: Partial<Config> = oc(
@@ -63,7 +69,7 @@ export async function createConfig<Config = BaseConfig>(
   preProcess?: <T = Config>(config: T) => T | Promise<T>,
   postProcess?: <T = Config>(config: T) => T | Promise<T>
 ): Promise<Config> {
-  const mc = getMcAsync();
+  const mc = getMc();
   if (preProcess) mc.preProcess = preProcess;
   if (postProcess) mc.postProcess = postProcess;
   const userConfig: Partial<Config> = oc(
@@ -85,7 +91,7 @@ export function isMaster(): boolean {
 export function getConfigSync<Config = BaseConfig>(
   postProcess?: <T = Config>(config: T) => T | Promise<T>
 ): Config {
-  const mc = getMcSync();
+  const mc = getMcFilesystem();
   if (postProcess) mc.postProcess = postProcess;
   return mc.getConfigSync();
 }
@@ -93,7 +99,7 @@ export function getConfigSync<Config = BaseConfig>(
 export async function getConfig<Config = BaseConfig>(
   postProcess?: <T = Config>(config: T) => T | Promise<T>
 ): Promise<Config> {
-  const mc = getMcAsync();
+  const mc = getMc();
   if (postProcess) mc.postProcess = postProcess;
   return mc.getConfig();
 }
@@ -103,7 +109,7 @@ export function updateConfigSync<Config = BaseConfig>(
   preProcess?: <T = Config>(config: T) => T | Promise<T>,
   postProcess?: <T = Config>(config: T) => T | Promise<T>
 ): Config {
-  const mc = getMcSync();
+  const mc = getMcFilesystem();
   if (preProcess) mc.preProcess = preProcess;
   if (postProcess) mc.postProcess = postProcess;
   return mc.setConfigSync(
@@ -116,7 +122,7 @@ export async function updateConfig<Config = BaseConfig>(
   preProcess?: <T = Config>(config: T) => T | Promise<T>,
   postProcess?: <T = Config>(config: T) => T | Promise<T>
 ): Promise<Config> {
-  const mc = getMcAsync();
+  const mc = getMc();
   if (preProcess) mc.preProcess = preProcess;
   if (postProcess) mc.postProcess = postProcess;
   return mc.setConfig(
@@ -125,22 +131,22 @@ export async function updateConfig<Config = BaseConfig>(
 }
 
 export function startSync() {
-  const mc = getMcSync();
+  const mc = getMcFilesystem();
   return mc.startSync();
 }
 
 export async function start() {
-  const mc = getMcAsync();
+  const mc = getMc();
   return mc.start();
 }
 
 export async function finish() {
-  const mc = getMcAsync();
+  const mc = getMc();
   return mc.finish();
 }
 
 export function finishSync() {
-  const mc = getMcSync();
+  const mc = getMcFilesystem();
   return mc.finishSync();
 }
 
