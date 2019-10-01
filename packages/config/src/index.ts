@@ -1,6 +1,7 @@
-import cosmiconfig from 'cosmiconfig';
 import Err from 'err';
 import MultithreadConfig from 'multithread-config';
+import cosmiconfig from 'cosmiconfig';
+import isPromise from 'is-promise';
 import mergeConfiguration from 'merge-configuration';
 import pkgDir from 'pkg-dir';
 import { oc } from 'ts-optchain.macro';
@@ -50,7 +51,8 @@ export function buildConfigSync<Config = BaseConfig>(
   name: string,
   defaultConfig?: Partial<Config>,
   runtimeConfig?: Partial<Config>,
-  force = false
+  force = false,
+  postProcess?: <T = Config>(config: T) => T
 ): Config {
   const mc = getMcFilesystem();
   if (!defaultConfig || !runtimeConfig || !force) {
@@ -71,14 +73,22 @@ export function buildConfigSync<Config = BaseConfig>(
     rootPath
   } as Partial<Config>;
   config = mergeConfiguration<Partial<Config>>(config, userConfig);
-  return mergeConfiguration<Config>(config, runtimeConfig);
+  const builtConfig = mergeConfiguration<Config>(config, runtimeConfig);
+  if (postProcess) {
+    if (isPromise(postProcess)) {
+      throw new Err('synchronous operations not enabled');
+    }
+    return postProcess(builtConfig);
+  }
+  return builtConfig;
 }
 
 export async function buildConfig<Config = BaseConfig>(
   name: string,
   defaultConfig?: Partial<Config>,
   runtimeConfig?: Partial<Config>,
-  force = false
+  force = false,
+  postProcess?: <T = Config>(config: T) => T | Promise<T>
 ): Promise<Config> {
   const mc = getMcFilesystem();
   if (!defaultConfig || !runtimeConfig || !force) {
@@ -99,25 +109,27 @@ export async function buildConfig<Config = BaseConfig>(
     rootPath
   } as Partial<Config>;
   config = mergeConfiguration<Partial<Config>>(config, userConfig);
-  return mergeConfiguration<Config>(config, runtimeConfig);
+  const builtConfig = mergeConfiguration<Config>(config, runtimeConfig);
+  if (postProcess) return postProcess(builtConfig);
+  return builtConfig;
 }
 
 export function createConfigSync<Config = BaseConfig>(
   name: string,
   defaultConfig: Partial<Config> = {},
   runtimeConfig: Partial<Config> = {},
-  preProcess?: <T = Config>(config: T) => T | Promise<T>,
-  postProcess?: <T = Config>(config: T) => T | Promise<T>
+  preProcess?: <T = Config>(config: T) => T,
+  postProcess?: <T = Config>(config: T) => T
 ): Config {
   const mc = getMcFilesystem();
   if (!isMaster()) throw new Err('only master process can create config');
   if (preProcess) mc.preProcess = preProcess;
-  if (postProcess) mc.postProcess = postProcess;
   const config = buildConfigSync<Config>(
     name,
     defaultConfig,
     runtimeConfig,
-    true
+    true,
+    postProcess
   );
   return mc.setConfigSync(config);
 }
@@ -132,46 +144,41 @@ export async function createConfig<Config = BaseConfig>(
   const mc = getMc();
   if (!isMaster()) throw new Err('only master process can create config');
   if (preProcess) mc.preProcess = preProcess;
-  if (postProcess) mc.postProcess = postProcess;
   const config = await buildConfig<Config>(
     name,
     defaultConfig,
     runtimeConfig,
-    true
+    true,
+    postProcess
   );
   return mc.setConfig(config);
 }
 
 export function getConfigSync<Config = BaseConfig>(
   name: string,
-  postProcess?: <T = Config>(config: T) => T | Promise<T>
+  postProcess?: <T = Config>(config: T) => T
 ): Config {
-  const mc = getMcFilesystem();
-  if (postProcess) mc.postProcess = postProcess;
-  return buildConfigSync(name);
+  return buildConfigSync(name, undefined, undefined, false, postProcess);
 }
 
 export async function getConfig<Config = BaseConfig>(
   name: string,
   postProcess?: <T = Config>(config: T) => T | Promise<T>
 ): Promise<Config> {
-  const mc = getMc();
-  if (postProcess) mc.postProcess = postProcess;
-  return buildConfig(name);
+  return buildConfig(name, undefined, undefined, false, postProcess);
 }
 
 export function updateConfigSync<Config = BaseConfig>(
   name: string,
   config: Partial<Config>,
   preProcess?: <T = Config>(config: T) => T | Promise<T>,
-  postProcess?: <T = Config>(config: T) => T | Promise<T>
+  postProcess?: <T = Config>(config: T) => T
 ): Config {
   const mc = getMcFilesystem();
   if (!isMaster()) throw new Err('only master process can update config');
   if (preProcess) mc.preProcess = preProcess;
-  if (postProcess) mc.postProcess = postProcess;
   return mc.setConfigSync(
-    mergeConfiguration<Config>(getConfigSync<Config>(name), config)
+    mergeConfiguration<Config>(getConfigSync<Config>(name, postProcess), config)
   );
 }
 
@@ -184,9 +191,11 @@ export async function updateConfig<Config = BaseConfig>(
   const mc = getMc();
   if (!isMaster()) throw new Err('only master process can update config');
   if (preProcess) mc.preProcess = preProcess;
-  if (postProcess) mc.postProcess = postProcess;
   return mc.setConfig(
-    mergeConfiguration<Config>(await getConfig<Config>(name), config)
+    mergeConfiguration<Config>(
+      await getConfig<Config>(name, postProcess),
+      config
+    )
   );
 }
 

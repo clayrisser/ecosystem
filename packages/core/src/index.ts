@@ -62,8 +62,8 @@ export default class Ecosystem<
     return updateConfigSync<T>(
       this.name,
       config,
-      this.preProcess,
-      this.postProcess
+      this.preProcess as <T = Config>(config: T) => T,
+      this.postProcess as <T = Config>(config: T) => T
     );
   }
 
@@ -80,7 +80,9 @@ export default class Ecosystem<
   getConfigSync<T = Config>(): T {
     if (this.socket) throw new Err('sync is disabled when using socket');
     if (!this._createdConfig) this.createConfigSync();
-    return getConfigSync<T>(this.name, this.postProcess);
+    return getConfigSync<T>(this.name, this.postProcess as <T = Config>(
+      config: T
+    ) => T);
   }
 
   async getConfig<T = Config>(): Promise<T> {
@@ -94,8 +96,8 @@ export default class Ecosystem<
       this.name,
       this.defaultConfig as T,
       runtimeConfig,
-      this.preProcess,
-      this.postProcess
+      this.preProcess as <T = Config>(config: T) => T,
+      this.postProcess as <T = Config>(config: T) => T
     );
     this._createdConfig = true;
     return config;
