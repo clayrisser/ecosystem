@@ -41,16 +41,23 @@ export function activate(socket = false) {
   return getMcFilesystem();
 }
 
-export function createConfigSync<Config = BaseConfig>(
+export function buildConfigSync<Config = BaseConfig>(
   name: string,
-  defaultConfig: Partial<Config> = {},
-  runtimeConfig: Partial<Config> = {},
-  preProcess?: <T = Config>(config: T) => T | Promise<T>,
-  postProcess?: <T = Config>(config: T) => T | Promise<T>
+  defaultConfig?: Partial<Config>,
+  runtimeConfig?: Partial<Config>,
+  force = false
 ): Config {
   const mc = getMcFilesystem();
-  if (preProcess) mc.preProcess = preProcess;
-  if (postProcess) mc.postProcess = postProcess;
+  if (!defaultConfig || !runtimeConfig || !force) {
+    const loadedConfig = mc.getConfigSync();
+    if (!force && isMaster()) return loadedConfig as Config;
+    if (!defaultConfig) {
+      defaultConfig = loadedConfig._defaultConfig as Partial<Config>;
+    }
+    if (!runtimeConfig) {
+      runtimeConfig = loadedConfig._runtimeConfig as Partial<Config>;
+    }
+  }
   const userConfig: Partial<Config> = oc(
     cosmiconfig(name).searchSync(rootPath)
   ).config({}) as Partial<Config>;
@@ -59,7 +66,55 @@ export function createConfigSync<Config = BaseConfig>(
     rootPath
   } as Partial<Config>;
   config = mergeConfiguration<Partial<Config>>(config, userConfig);
-  return mc.setConfigSync(mergeConfiguration<Config>(config, runtimeConfig));
+  return mergeConfiguration<Config>(config, runtimeConfig);
+}
+
+export async function buildConfig<Config = BaseConfig>(
+  name: string,
+  defaultConfig?: Partial<Config>,
+  runtimeConfig?: Partial<Config>,
+  force = false
+): Promise<Config> {
+  const mc = getMcFilesystem();
+  if (!defaultConfig || !runtimeConfig || !force) {
+    const loadedConfig = await mc.getConfig();
+    if (!force && isMaster()) return loadedConfig as Config;
+    if (!defaultConfig) {
+      defaultConfig = loadedConfig._defaultConfig as Partial<Config>;
+    }
+    if (!runtimeConfig) {
+      runtimeConfig = loadedConfig._runtimeConfig as Partial<Config>;
+    }
+  }
+  const userConfig: Partial<Config> = oc(
+    cosmiconfig(name).searchSync(rootPath)
+  ).config({}) as Partial<Config>;
+  let config = {
+    ...defaultConfig,
+    rootPath
+  } as Partial<Config>;
+  config = mergeConfiguration<Partial<Config>>(config, userConfig);
+  return mergeConfiguration<Config>(config, runtimeConfig);
+}
+
+export function createConfigSync<Config = BaseConfig>(
+  name: string,
+  defaultConfig: Partial<Config> = {},
+  runtimeConfig: Partial<Config> = {},
+  preProcess?: <T = Config>(config: T) => T,
+  postProcess?: <T = Config>(config: T) => T
+): Config {
+  const mc = getMcFilesystem();
+  if (!isMaster()) throw new Err('only master process can create config');
+  if (preProcess) mc.preProcess = preProcess;
+  if (postProcess) mc.postProcess = postProcess;
+  const config = buildConfigSync<Config>(
+    name,
+    defaultConfig,
+    runtimeConfig,
+    true
+  );
+  return mc.setConfigSync(config);
 }
 
 export async function createConfig<Config = BaseConfig>(
@@ -70,17 +125,16 @@ export async function createConfig<Config = BaseConfig>(
   postProcess?: <T = Config>(config: T) => T | Promise<T>
 ): Promise<Config> {
   const mc = getMc();
+  if (!isMaster()) throw new Err('only master process can create config');
   if (preProcess) mc.preProcess = preProcess;
   if (postProcess) mc.postProcess = postProcess;
-  const userConfig: Partial<Config> = oc(
-    cosmiconfig(name).searchSync(rootPath)
-  ).config({}) as Partial<Config>;
-  let config = {
-    ...defaultConfig,
-    rootPath
-  } as Partial<Config>;
-  config = mergeConfiguration<Partial<Config>>(config, userConfig);
-  return mc.setConfig(mergeConfiguration<Config>(config, runtimeConfig));
+  const config = await buildConfig<Config>(
+    name,
+    defaultConfig,
+    runtimeConfig,
+    true
+  );
+  return mc.setConfig(config);
 }
 
 export function isMaster(): boolean {
@@ -89,11 +143,12 @@ export function isMaster(): boolean {
 }
 
 export function getConfigSync<Config = BaseConfig>(
+  name: string,
   postProcess?: <T = Config>(config: T) => T | Promise<T>
 ): Config {
   const mc = getMcFilesystem();
   if (postProcess) mc.postProcess = postProcess;
-  return mc.getConfigSync();
+  return buildConfigSync(name);
 }
 
 export async function getConfig<Config = BaseConfig>(
@@ -105,15 +160,17 @@ export async function getConfig<Config = BaseConfig>(
 }
 
 export function updateConfigSync<Config = BaseConfig>(
+  name: string,
   config: Partial<Config>,
   preProcess?: <T = Config>(config: T) => T | Promise<T>,
   postProcess?: <T = Config>(config: T) => T | Promise<T>
 ): Config {
   const mc = getMcFilesystem();
+  if (!isMaster()) throw new Err('only master process can update config');
   if (preProcess) mc.preProcess = preProcess;
   if (postProcess) mc.postProcess = postProcess;
   return mc.setConfigSync(
-    mergeConfiguration<Config>(getConfigSync<Config>(), config)
+    mergeConfiguration<Config>(getConfigSync<Config>(name), config)
   );
 }
 
@@ -123,6 +180,7 @@ export async function updateConfig<Config = BaseConfig>(
   postProcess?: <T = Config>(config: T) => T | Promise<T>
 ): Promise<Config> {
   const mc = getMc();
+  if (!isMaster()) throw new Err('only master process can update config');
   if (preProcess) mc.preProcess = preProcess;
   if (postProcess) mc.postProcess = postProcess;
   return mc.setConfig(
