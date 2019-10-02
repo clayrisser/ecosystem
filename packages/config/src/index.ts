@@ -32,7 +32,10 @@ export function getMcFilesystem(): MultithreadConfig {
       'multithread socket is incompatible with multithread filesystem'
     );
   }
-  mcFilesystem = new MultithreadConfig<BaseConfig>({ socket: false });
+  mcFilesystem = new MultithreadConfig<BaseConfig>({
+    socket: false,
+    watch: false
+  });
   return mcFilesystem;
 }
 
@@ -43,7 +46,7 @@ export function getMcSocket(): MultithreadConfig {
       'multithread socket is incompatible with multithread filesystem'
     );
   }
-  mcSocket = new MultithreadConfig<BaseConfig>();
+  mcSocket = new MultithreadConfig<BaseConfig>({ forceKill: true });
   return mcSocket;
 }
 
