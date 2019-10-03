@@ -3,6 +3,7 @@ import MultithreadConfig from 'multithread-config';
 import cosmiconfig from 'cosmiconfig';
 import isPromise from 'is-promise';
 import mergeConfiguration from 'merge-configuration';
+import mergeWith from 'lodash.mergewith';
 import pkgDir from 'pkg-dir';
 import { oc } from 'ts-optchain.macro';
 import { BaseConfig } from './types';
@@ -10,6 +11,32 @@ import { BaseConfig } from './types';
 let mcSocket: MultithreadConfig;
 let mcFilesystem: MultithreadConfig;
 const rootPath = pkgDir.sync(process.cwd()) || process.cwd();
+
+export function smartRebuild(defaultConfig: any, loadedConfig: any): any {
+  if (
+    typeof loadedConfig === 'undefined' ||
+    (typeof defaultConfig !== typeof loadedConfig &&
+      typeof loadedConfig === 'string')
+  ) {
+    return defaultConfig;
+  }
+  if (
+    Array.isArray(loadedConfig) ||
+    Object.prototype.toString.call(loadedConfig) === '[object RegExp]' ||
+    typeof defaultConfig === 'undefined' ||
+    typeof loadedConfig === 'function' ||
+    loadedConfig === null
+  ) {
+    return loadedConfig;
+  }
+  return mergeWith(
+    defaultConfig,
+    loadedConfig,
+    (defaultConfig: any, loadedConfig: any) => {
+      return smartRebuild(defaultConfig, loadedConfig);
+    }
+  );
+}
 
 export function getMc(): MultithreadConfig {
   return mcSocket || mcFilesystem;
@@ -59,18 +86,18 @@ export function buildConfigSync<Config = BaseConfig>(
   name: string,
   defaultConfig?: Partial<Config>,
   runtimeConfig?: Partial<Config>,
-  force = false,
+  creating = false,
   postProcess?: <T = Config>(config: T) => T
 ): Config {
   const mc = getMcFilesystem();
-  if (!defaultConfig || !runtimeConfig || !force) {
-    const loadedConfig = mc.getConfigSync();
-    if (!force && isMaster()) return loadedConfig as Config;
-    if (!defaultConfig) {
-      defaultConfig = loadedConfig._defaultConfig as Partial<Config>;
-    }
+  let loadedConfig: BaseConfig | void;
+  if (!runtimeConfig || !creating) {
+    loadedConfig = mc.getConfigSync() as BaseConfig;
+    if (!creating && isMaster()) return (loadedConfig as unknown) as Config;
     if (!runtimeConfig) {
-      runtimeConfig = loadedConfig._runtimeConfig as Partial<Config>;
+      runtimeConfig = (loadedConfig._runtimeConfig as unknown) as Partial<
+        Config
+      >;
     }
   }
   let userConfig: Partial<Config> = {};
@@ -83,11 +110,14 @@ export function buildConfigSync<Config = BaseConfig>(
     userConfig = require(err.mark.name);
   }
   let config = {
-    ...defaultConfig,
+    ...(!loadedConfig ? defaultConfig : {}),
     rootPath
   } as Partial<Config>;
   config = mergeConfiguration<Partial<Config>>(config, userConfig);
-  const builtConfig = mergeConfiguration<Config>(config, runtimeConfig);
+  let builtConfig = mergeConfiguration<Config>(config, runtimeConfig);
+  if (loadedConfig) {
+    builtConfig = smartRebuild(builtConfig, loadedConfig._defaultConfig);
+  }
   if (postProcess) {
     if (isPromise(postProcess)) {
       throw new Err('synchronous operations not enabled');
@@ -101,18 +131,18 @@ export async function buildConfig<Config = BaseConfig>(
   name: string,
   defaultConfig?: Partial<Config>,
   runtimeConfig?: Partial<Config>,
-  force = false,
+  creating = false,
   postProcess?: <T = Config>(config: T) => T | Promise<T>
 ): Promise<Config> {
   const mc = getMcFilesystem();
-  if (!defaultConfig || !runtimeConfig || !force) {
-    const loadedConfig = await mc.getConfig();
-    if (!force && isMaster()) return loadedConfig as Config;
-    if (!defaultConfig) {
-      defaultConfig = loadedConfig._defaultConfig as Partial<Config>;
-    }
+  let loadedConfig: BaseConfig | void;
+  if (!runtimeConfig || !creating) {
+    loadedConfig = (await mc.getConfig()) as BaseConfig;
+    if (!creating && isMaster()) return (loadedConfig as unknown) as Config;
     if (!runtimeConfig) {
-      runtimeConfig = loadedConfig._runtimeConfig as Partial<Config>;
+      runtimeConfig = (loadedConfig._runtimeConfig as unknown) as Partial<
+        Config
+      >;
     }
   }
   let userConfig: Partial<Config>;
@@ -125,11 +155,14 @@ export async function buildConfig<Config = BaseConfig>(
     userConfig = await import(err.mark.name);
   }
   let config = {
-    ...defaultConfig,
+    ...(!loadedConfig ? defaultConfig : {}),
     rootPath
   } as Partial<Config>;
   config = mergeConfiguration<Partial<Config>>(config, userConfig);
-  const builtConfig = mergeConfiguration<Config>(config, runtimeConfig);
+  let builtConfig = mergeConfiguration<Config>(config, runtimeConfig);
+  if (loadedConfig) {
+    builtConfig = smartRebuild(buildConfig, loadedConfig._defaultConfig);
+  }
   if (postProcess) return postProcess(builtConfig);
   return builtConfig;
 }
