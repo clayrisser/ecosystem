@@ -10,8 +10,10 @@
     }
   ],
   "rules": {
+    "global-require": "off",
     "import/export": "off",
     "import/named": "off",
+    "import/no-dynamic-require": "off",
     "import/no-unresolved": "off",
     "no-unused-vars": "off",
     "react/forbid-foreign-prop-types": "off",

@@ -73,9 +73,15 @@ export function buildConfigSync<Config = BaseConfig>(
       runtimeConfig = loadedConfig._runtimeConfig as Partial<Config>;
     }
   }
-  const userConfig: Partial<Config> = oc(
-    cosmiconfig(name).searchSync(rootPath)
-  ).config({}) as Partial<Config>;
+  let userConfig: Partial<Config> = {};
+  try {
+    userConfig = oc(cosmiconfig(name).searchSync(rootPath)).config(
+      {}
+    ) as Partial<Config>;
+  } catch (err) {
+    if (err.name !== 'YAMLException') throw err;
+    userConfig = require(err.mark.name);
+  }
   let config = {
     ...defaultConfig,
     rootPath
@@ -109,9 +115,15 @@ export async function buildConfig<Config = BaseConfig>(
       runtimeConfig = loadedConfig._runtimeConfig as Partial<Config>;
     }
   }
-  const userConfig: Partial<Config> = oc(
-    cosmiconfig(name).searchSync(rootPath)
-  ).config({}) as Partial<Config>;
+  let userConfig: Partial<Config>;
+  try {
+    userConfig = oc(cosmiconfig(name).searchSync(rootPath)).config(
+      {}
+    ) as Partial<Config>;
+  } catch (err) {
+    if (err.name !== 'YAMLException') throw err;
+    userConfig = await import(err.mark.name);
+  }
   let config = {
     ...defaultConfig,
     rootPath
